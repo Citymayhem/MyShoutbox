@@ -10,7 +10,6 @@
 // 
 //
 //
-
 var ShoutBox = {
 	
 	refreshInterval: 60,
@@ -19,21 +18,47 @@ var ShoutBox = {
 	firstRun: 1,
 	MaxEntries: 5,
 	DataStore: new Array(),
+	shouting: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
 
+	// Escape HTML. Source: http://stackoverflow.com/a/6020820
+	// Escape a string for HTML interpolation.
+	escape: function(string) {
+		// List of HTML entities for escaping.
+		var htmlEscapes = {
+		  '&': '&amp;',
+		  '<': '&lt;',
+		  '>': '&gt;',
+		  '"': '&quot;',
+		  "'": '&#x27;',
+		  '/': '&#x2F;'
+		};
+
+		// Regex containing the keys listed immediately above.
+		var htmlEscaper = /[&<>"'\/]/g;
+		return ('' + string).replace(htmlEscaper, function(match) {
+			return htmlEscapes[match];
+		});
+	},
+	
 
 	showShouts: function() {
 		setTimeout("ShoutBox.showShouts();", ShoutBox.refreshInterval * 1000);
+		/*
 		if (typeof Ajax == 'object') {
 			new Ajax.Request('xmlhttp.php?action=show_shouts&last_id='+ShoutBox.lastID, {method: 'get', onComplete: function(request) { ShoutBox.shoutsLoaded(request); } });
 		}
+		*/		
+		$.get("xmlhttp.php?action=show_shouts&last_id="+ShoutBox.lastID, function(data){
+			ShoutBox.shoutsLoaded(data);
+		});
 	},
 
-	shoutsLoaded: function(request) {
+	shoutsLoaded: function(responseData) {
 		
 		var theHTML = "";
 		var curData = "";
-		var data = request.responseText.split('^--^');
+		var data = responseData.split('^--^');
 		var theID = parseInt(data[0]);
 		var theEntries = parseInt(data[1]);
 
@@ -81,53 +106,65 @@ var ShoutBox = {
 				ShoutBox.totalEntries = ShoutBox.MaxEntries;
 
 			} else {
-				theHTML = data[2] + $("shoutbox_data").innerHTML;
+				theHTML = data[2] + $("#shoutbox_data").html();
 			}
 
 		}
-
-		$("shoutbox_data").innerHTML = theHTML;
+		$("#shoutbox_data").html(theHTML);
 
 		// clean up DataStore
 		ShoutBox.cleanDataStore();
 	},
 	
 	pvtAdd: function(uid) {
-		var msg = $("shout_data").value;
-		$("shout_data").value = '/pvt ' + uid + ' ' + msg;
+		var msg = $("#shout_data").val();
+		$("#shout_data").val('/pvt ' + uid + ' ' + msg);
 	},
 
 	postShout: function() {
-		message = $("shout_data").value;
-		if (message == "") {
+		message = $("#shout_data").val();
+		if (message == "" || ShoutBox.shouting) {
 			return false;
 		}
 
-		$("shouting-status").value = ShoutBox.lang[0];
+		// Disable input, make button say "Shouting..."
+		$("#shouting-status").val(ShoutBox.lang[0]);
+		$("#shout_data").attr("disabled", "disabled");
+		ShoutBox.shouting = true;
 
 		postData = "shout_data="+encodeURIComponent(message).replace(/\+/g, "%2B");
-		new Ajax.Request('xmlhttp.php?action=add_shout', {method: 'post', postBody: postData, onComplete: function(request) { ShoutBox.postedShout(request); }});
+		//new Ajax.Request('xmlhttp.php?action=add_shout', {method: 'post', postBody: postData, onComplete: function(request) { ShoutBox.postedShout(request, message); }});
+		$.post("xmlhttp.php?action=add_shout", postData)
+			.done(function(data){
+				ShoutBox.postedShout(data, message);
+			});
 	},
 
-	postedShout: function(request) {
-		
-		if (request.responseText == 'deleted') {
+	postedShout: function(responseData, message) {
+		if (responseData.indexOf("success") > -1) {
+			// Empty text box
+			$("#shout_data").val("");
+		}
+		// wtf is this? This is all to do with POSTING shouts. Why is this here?
+		else if (responseData.indexOf("deleted") > -1) {
 			ShoutBox.firstRun = 1;
 			ShoutBox.lastID = 0;
-			alert("Shouts deleted as requested.");
+			ShoutBox.alert("Shouts deleted as requested.");
 		}
-		else if (request.responseText.indexOf('flood') != -1) {
+		else if (responseData.indexOf('flood') > -1) {
 			var split = new Array();
-			split = request.responseText.split('|');			
+			split = responseData.split('|');			
 			var interval = split[1]; 
-			
-			alert(ShoutBox.lang[3].replace('<interval>', interval));
+			ShoutBox.alert(ShoutBox.lang[3].replace('<interval>', interval));
 		}
-		else if (request.responseText.indexOf("success") == -1) {
-			alert(ShoutBox.lang[4]);
+		else {
+			ShoutBox.alert(ShoutBox.lang[4]);
 		}
 
-		$("shouting-status").value = ShoutBox.lang[1];
+		// Reset button, re-enable text box, reload shouts
+		$("#shouting-status").val(ShoutBox.lang[1]);
+		$("#shout_data").removeAttr("disabled");
+		ShoutBox.shouting = false;
 		ShoutBox.showShouts();
 	},
 	
@@ -142,29 +179,32 @@ var ShoutBox = {
 		}
 
 		postData = "reason="+encodeURIComponent(reason).replace(/\+/g, "%2B")+"&sid="+sid;
-		new Ajax.Request('xmlhttp.php?action=report_shout', {method: 'post', postBody: postData, onComplete: function(request) { ShoutBox.shoutReported(request); }});
+		//new Ajax.Request('xmlhttp.php?action=report_shout', {method: 'post', postBody: postData, onComplete: function(request) { ShoutBox.shoutReported(request); }});
+		$.post("xmlhttp.php?action=report_shout",postData)
+			.done(function(data){
+				ShoutBox.shoutReported(data);
+			});
 	},
 
-	shoutReported: function(request) {
-		if (request.responseText == 'invalid_shout') {
-			alert(ShoutBox.lang[9]);
-			return false;
+	shoutReported: function(responseData) {
+		var msg = "";
+		if (responseData == 'invalid_shout') {
+			msg = ShoutBox.lang[9];
 		}
-		else if (request.responseText == 'already_reported') {
-			alert(ShoutBox.lang[11]);
-			return false;
+		else if (responseData == 'already_reported') {
+			msg = ShoutBox.lang[11];
 		}
-		else if (request.responseText == 'shout_reported') {
-			alert(ShoutBox.lang[10]);
+		else if (responseData == 'shout_reported') {
+			msg = ShoutBox.lang[10];
 		}
-		
-		ShoutBox.showShouts();
+		if(msg == "")return;
+		ShoutBox.alert(msg);
 	},
 	
 	// prompt reason
 	promptReason: function(id) {
 		
-		var reason = prompt("Enter a reason:", "");
+		var reason = prompt("Why are you reporting this shout:", "");
 		
 		if (reason == "" || reason == null || id == "") {
 			return false;
@@ -175,29 +215,26 @@ var ShoutBox = {
 		return ShoutBox.reportShout(reason, id);
 	},
 	
-	deleteShout: function(id, type, message) {
-		
-		message = message.escapeHTML(); // escape HTML before outputting the message
-		
-		var confirmation = confirm(message);
-		
-		if (!confirmation)
-			return false;
-		
+	// Hide Shout
+	deleteShout: function(id, type) {
 		if (type == 1) {
-			$("shoutbox_data").innerHTML = ShoutBox.lang[2];
+			$("#shoutbox_data").html(ShoutBox.lang[2]);
 		}
 		
 		id = parseInt(id);
 
-		new Ajax.Request('xmlhttp.php?action=delete_shout&id='+id, {method: 'get', onComplete: function(request) { ShoutBox.deletedShout(request, id, type); } });
+		//new Ajax.Request('xmlhttp.php?action=delete_shout&id='+id, {method: 'get', onComplete: function(request) { ShoutBox.deletedShout(request, id, type); } });
+		$.get("xmlhttp.php?action=delete_shout&id=" + id, function(data){
+			ShoutBox.deletedShout(data, id, type);
+		});
 	},
 	
-	deletedShout: function(request, id, type) {
-		if (request.responseText.indexOf("success") == -1) {
-			alert("Error deleting shout... Try again!");
+	// Shout hidden
+	deletedShout: function(responseData, id, type) {
+		if (responseData.indexOf("success") == -1) {
+			ShoutBox.alert("Error deleting shout... Try again!");
 		} else if (type == 2) {
-			alert("Shout deleted.");
+			ShoutBox.alert("Shout deleted.");
 		}
 		
 		id = parseInt(id);
@@ -207,18 +244,17 @@ var ShoutBox = {
 			ShoutBox.lastID = 0;
 			ShoutBox.showShouts();
 		} else {
-			try {
-				$("shout-"+id).style.display = "none";
-			} catch (e) { 
-				$("shout-"+id).style.display = "hidden";
-			}
+			// Hide the hide button, show the recover button and HIDDEN message
+			$("#shout-hide-"+id).css("display", "none");
+			$("#shout-hidemsg-"+id).css("display","inline");
+			$("#shout-recover-"+id).css("display","inline");
 		}
 
 	},
 	
 	removeShout: function(id, type, message) {
 		
-		message = message.escapeHTML(); // escape HTML before outputting the message
+		message = ShoutBox.escape(message); // escape HTML before outputting the message
 		
 		var confirmation = confirm(message);
 		
@@ -226,19 +262,22 @@ var ShoutBox = {
 			return false;
 			
 		if (type == 1) {
-			$("shoutbox_data").innerHTML = ShoutBox.lang[2];
+			$("#shoutbox_data").html(ShoutBox.lang[2]);
 		}
 		
 		id = parseInt(id);
 
-		new Ajax.Request('xmlhttp.php?action=remove_shout&id='+id, {method: 'get', onComplete: function(request) { ShoutBox.deletedShout(request, id, type); } });
+		//new Ajax.Request('xmlhttp.php?action=remove_shout&id='+id, {method: 'get', onComplete: function(request) { ShoutBox.removedShout(request, id, type); } });
+		$.get("xmlhttp.php?action=remove_shout&id=" + id, function(data){
+			ShoutBox.removedShout(data, id, type);
+		});
 	},
 	
-	removedShout: function(request, id, type) {
-		if (request.responseText.indexOf("success") == -1) {
-			alert("Error removing shout... Try again!");
+	removedShout: function(responseData, id, type) {
+		if (responseData.indexOf("success") == -1) {
+			ShoutBox.alert("Error removing shout... Try again!");
 		} else if (type == 2) {
-			alert("Shout removed.");
+			ShoutBox.alert("Shout removed.");
 		}
 		
 		id = parseInt(id);
@@ -248,38 +287,31 @@ var ShoutBox = {
 			ShoutBox.lastID = 0;
 			ShoutBox.showShouts();
 		} else {
-			try {
-				$("shout-"+id).style.display = "none";
-			} catch (e) { 
-				$("shout-"+id).style.display = "hidden";
-			}
+			$("#shout-"+id).css("display","none");
 		}
 
 	},
 	
-	recoverShout: function(id, type, message) {
-		
-		message = message.escapeHTML(); // escape HTML before outputting the message
-		
-		var confirmation = confirm(message);
-		
-		if (!confirmation)
-			return false;
-
+	// Show shout
+	recoverShout: function(id, type) {
 		if (type == 1) {
-			$("shoutbox_data").innerHTML = ShoutBox.lang[2];
+			$("#shoutbox_data").html(ShoutBox.lang[2]);
 		}
 
 		id = parseInt(id);
 		
-		new Ajax.Request('xmlhttp.php?action=recover_shout&id='+id, {method: 'get', onComplete: function(request) { ShoutBox.recoveredShout(request, id, type); } });
+		//new Ajax.Request('xmlhttp.php?action=recover_shout&id='+id, {method: 'get', onComplete: function(request) { ShoutBox.recoveredShout(request, id, type); } });
+		$.get("xmlhttp.php?action=recover_shout&id=" + id, function(data){
+			ShoutBox.recoveredShout(data, id, type);
+		});
 	},
 	
-	recoveredShout: function(request, id, type) {
-		if (request.responseText.indexOf("success") == -1) {
-			alert("Error recovering shout... Try again!");
+	// Shout shown
+	recoveredShout: function(responseData, id, type) {
+		if (responseData.indexOf("success") == -1) {
+			ShoutBox.alert("Error recovering shout... Try again!");
 		} else if (type == 2) {
-			alert("Shout recovered.");
+			ShoutBox.alert("Shout recovered.");
 		}
 		
 		id = parseInt(id);
@@ -289,11 +321,10 @@ var ShoutBox = {
 			ShoutBox.lastID = 0;
 			ShoutBox.showShouts();
 		} else {
-			try {
-				$("shout-"+id).style.display = "none";
-			} catch (e) { 
-				$("shout-"+id).style.display = "hidden";
-			}
+			// Show the hide button, hide the recover button and HIDDEN message
+			$("#shout-hide-"+id).css("display","inline");
+			$("#shout-hidemsg-"+id).css("display","none");
+			$("#shout-recover-"+id).css("display","none");
 		}
 
 	},
@@ -307,10 +338,29 @@ var ShoutBox = {
 	},
 
 	disableShout: function() {
-		try { 
-			$("shouting-status").disabled = true;
-		} catch (e) {
-			$("shouting-status").readonly = true;
-		}
+		$("#shouting-status").attr("disabled","disabled");
+	},
+	
+	alert: function(msg) {
+		$("#shoutbox-alert").css("display","table-row");
+		$("#shoutbox-alert-contents").html(msg);
+		setTimeout(function(){$("#shoutbox-alert").css("display","none");},5000);
 	}
 };
+
+
+/*
+// Events
+$(document).ready(function(){
+	var innerHeightCache = $("#shoutbox_data").innerHeight();
+	$("#shoutbox_data").resize(function(){
+		innerHeightCache = $("#shoutbox_data").innerHeight();
+	});
+
+	$("#shoutbox_data").scroll(function(){
+		if(my_post_key == "ab1650d34c6582d57d8c48a9b73907de"){
+			console.log("ScrollTop + InnerHeight = ScrollHeight");
+			console.log((innerHeightCache + $("#shoutbox_data").scrollTop()) + " = " + this.scrollHeight);
+		}
+	});
+});*/

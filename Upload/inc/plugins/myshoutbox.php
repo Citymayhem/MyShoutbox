@@ -46,7 +46,7 @@ function myshoutbox_info()
 		'authorsite'	=> 'http://consoleaddicted.com/',
 		'version'		=> '1.7',
 		'guid'			=> 'c7e5e6c1a57f0639ea52d7813b23579f',
-		'compatibility' => '14*,15*,16*',
+		'compatibility' => '14*,15*,16*,17*,18*',
 	);
 }
 
@@ -244,6 +244,26 @@ function myshoutbox_install()
 		"disporder"		=> "18",
 		"gid"			=> intval($gid),
 	);
+	
+	$shoutbox_setting_19 = array (
+		"name"			=>	"mysb_banned_mycode",
+		"title"			=>	"Banned MyCode",
+		"description"	=>	"Enter a comma-separated list of MyCode you want to be ignored.",
+		"value"			=>	"php,code,quote,img,list,size",
+		"optionscode"	=>	"text",
+		"disporder"		=>	"19",
+		"gid"			=>	intval($gid),
+	);
+	
+	$shoutbox_setting_20 = array (
+		"name"			=>	"mysb_cooldown_groups",
+		"title"			=>	"Cooldown Groups",
+		"description"	=>	"Enter a comma-separated list of group IDs which should obey the cool-down restriction. Leave blank to disable.",
+		"value"			=>	"1,2",
+		"optionscode"	=>	"text",
+		"disporder"		=>	"20",
+		"gid"			=>	intval($gid),
+	);
     
 	$db->insert_query("settings", $shoutbox_setting_1);
 	$db->insert_query("settings", $shoutbox_setting_2);
@@ -263,6 +283,8 @@ function myshoutbox_install()
 	$db->insert_query("settings", $shoutbox_setting_16);
 	$db->insert_query("settings", $shoutbox_setting_17);
 	$db->insert_query("settings", $shoutbox_setting_18);
+	$db->insert_query("settings", $shoutbox_setting_19);
+	$db->insert_query("settings", $shoutbox_setting_20);
 	
 	// create table
 	$db->write_query("CREATE TABLE `".TABLE_PREFIX."mysb_shouts` (
@@ -313,6 +335,40 @@ function myshoutbox_activate()
 	left: 0;
 }
 
+.shoutbox-icon{
+	max-width:12px;
+	max-height:12px;
+}
+
+#shoutbox-alert{
+	display:none;
+}
+
+#shoutbox-alert td{
+	padding:0;
+}
+
+#shoutbox-alert-contents{
+	padding:5px;
+}
+
+#shout_data{
+	overflow-x: hidden;
+	resize: none;
+	margin-right: 4px;
+	padding: 3px;
+	border-radius: 3px;
+	vertical-align: middle;
+}
+	
+#shout_data:focus {
+	border: 1px solid #66afe9;
+}
+	
+#shouting-status {
+	vertical-align: middle;
+	border-radius: 3px;
+}
 
 li.shoutbox_normal {
 	list-style: none;
@@ -320,7 +376,7 @@ li.shoutbox_normal {
 	position: relative;
 	cursor: pointer;
 	color: transparent;
-	display: inline ;
+	display: inline;
 	border: 1px;
 	border-color: #FFFFFF;
 }
@@ -343,6 +399,14 @@ li.shoutbox_color {
 	border: 1px solid #FFF;
 }
 
+.shoutbox_pm{
+	background:#08f;
+	color:white;
+}
+.shoutbox_pm a{
+	color:#005500;
+	font-weight:bold;
+}
 </style>
 
 <table border="0" cellspacing="1" cellpadding="4" class="tborder">
@@ -350,23 +414,25 @@ li.shoutbox_color {
 <tr>
 <td class="thead" colspan="2">
 <div class="expcolimage"><img src="{$theme[\'imgdir\']}/collapse.gif" id="shoutbox_img" class="expander" alt="[-]" /></div>
-<div><strong>{$lang->mysb_shoutbox}</strong> (<a href="index.php?action=full_shoutbox">{$lang->mysb_fullsbox}</a> - <a href="pspshoutbox.php">{$lang->mysb_portable}</a>)<br /></div>
+<div><strong>{$lang->mysb_shoutbox}</strong> (<a href="index.php?action=full_shoutbox">{$lang->mysb_fullsbox}</a> - <a style="cursor: pointer;" onclick="window.open(\'shoutbox.php\',\'{$lang->mysb_shoutbox}\',\'scrollbars=yes, menubar=no,width=825,height=449,toolbar=no\');">{$lang->mysb_popup_shoutbox}</a>)<br /></div>
 </td>
 </tr>
 </thead>
 
 <tbody id="shoutbox_e">
 <tr>
- <td class="trow2" width="66%" align="center"><form onsubmit="ShoutBox.postShout(); $(\'shout_data\').value = \'\'; return false;">{$lang->mysb_shout} <input type="text" id="shout_data" size="50" /> - <input type="submit" value="{$lang->mysb_shoutnow}" id="shouting-status" /></form></td>
- <td class="trow2" width="12%" align="center">{$lang->mysb_options}</td>
+ <td class="tcat" width="66%" align="center">
+	 <form onsubmit="ShoutBox.postShout(); return false;">
+		 <textarea id="shout_data" rows="1" cols="50" placeholder="Enter a message..."></textarea>
+		 <input id="shouting-status" class="button" type="submit" value="{$lang->mysb_shoutnow}" />
+	  </form>
+  </td>
+</tr>
+<tr id="shoutbox-alert">
+ <td class="trow1"><div id="shoutbox-alert-contents"></div></td>
 </tr>
 <tr>
- <td class="trow1" width="76%"><div id="shoutbox_data" style="height: {$mybb->settings[\'mysb_height\']}px; overflow: auto;">{$lang->mysb_loading}</div></td>
- <td class="trow1" width="12%" align="center">
-	<a style="cursor: pointer;" id="smilies" onclick="window.open(\'misc.php?action=smilies&amp;popup=true&amp;editor=clickableEditor\',\'{$lang->mysb_smilies}\',\'scrollbars=yes, menubar=no,width=460,height=360,toolbar=no\');">{$lang->mysb_smilies}</a>
-	<br />
-	<a style="cursor: pointer;" onclick="window.open(\'shoutbox.php\',\'{$lang->mysb_shoutbox}\',\'scrollbars=yes, menubar=no,width=825,height=449,toolbar=no\');">{$lang->mysb_popup_shoutbox}</a>
- </td>
+ <td class="trow1" width="76%" style="padding:0"><div id="shoutbox_data" style="padding:2px;height: {$mybb->settings[\'mysb_height\']}px; overflow: auto;">{$lang->mysb_loading}</div></td>
 </tr>
 </tbody>
 </table>
@@ -376,14 +442,37 @@ ShoutBox.refreshInterval = {$mybb->settings[\'mysb_refresh_interval\']};
 ShoutBox.MaxEntries = {$mybb->settings[\'mysb_shouts_main\']};
 ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
 {$extra_js}
-Event.observe(window, \'load\', ShoutBox.showShouts); 
+$(document).ready(function(){
+	$("#shout_data").keypress(function(event){ 
+		if(event.keyCode == 13){ 
+			event.preventDefault();
+			ShoutBox.postShout();
+		}
+	});
+	ShoutBox.showShouts();
+});
 </script>
 
 <br />';
 
 	$mysb_boxfull_tpl = '<html>
 <head>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
 <title>Full Shoutbox</title>
+<style>
+.shoutbox-icon{
+	max-width:12px;
+	max-height:12px;
+}
+.shoutbox_pm{
+	background:#08f;
+	color:white;
+}
+.shoutbox_pm a{
+	color:#005500;
+	font-weight:bold;
+}
+</style>
 {$headerinclude}
 </head>
 <body>
@@ -408,6 +497,9 @@ Event.observe(window, \'load\', ShoutBox.showShouts);
 <center>$multipage</center>
 
 {$footer}
+<script type="text/javascript">
+ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
+</script>
 </body>
 </html>
 ';
@@ -429,6 +521,10 @@ Event.observe(window, \'load\', ShoutBox.showShouts);
 	left: 0;
 }
 
+.shoutbox-icon{
+	max-width:12px;
+	max-height:12px;
+}
 
 li.shoutbox_normal {
 	list-style: none;
@@ -458,7 +554,14 @@ li.shoutbox_color {
 	display: block;
 	border: 1px solid #FFF;
 }
-
+.shoutbox_pm{
+	background:#08f;
+	color:white;
+}
+.shoutbox_pm a{
+	color:#005500;
+	font-weight:bold;
+}
 </style>
 
 <table border="0" cellspacing="1" cellpadding="4" class="tborder">
@@ -466,23 +569,17 @@ li.shoutbox_color {
 <tr>
 <td class="thead" colspan="2">
 <div class="expcolimage"><img src="{$theme[\'imgdir\']}/collapse.gif" id="shoutbox_img" class="expander" alt="[-]" /></div>
-<div><strong>{$lang->mysb_shoutbox}</strong> (<a href="index.php?action=full_shoutbox">{$lang->mysb_fullsbox}</a> - <a href="pspshoutbox.php">{$lang->mysb_portable}</a>)<br /></div>
+<div><strong>{$lang->mysb_shoutbox}</strong> (<a href="index.php?action=full_shoutbox">{$lang->mysb_fullsbox}</a> - <a style="cursor: pointer;" onclick="window.open(\'shoutbox.php\',\'{$lang->mysb_shoutbox}\',\'scrollbars=yes, menubar=no,width=825,height=449,toolbar=no\');">{$lang->mysb_popup_shoutbox}</a>)<br /></div>
 </td>
 </tr>
 </thead>
 
 <tbody id="shoutbox_e">
 <tr>
- <td class="trow2" width="66%" align="center"><form onSubmit="ShoutBox.postShout(); $(\'shout_data\').value = \'\'; return false;">{$lang->mysb_shout} <input type="text" id="shout_data" size="50" /> - <input type="submit" value="{$lang->mysb_shoutnow}" id="shouting-status" /></form></td>
- <td class="trow2" width="12%" align="center">{$lang->mysb_options}</td>
+ <td class="tcat" width="66%" align="center"><form onSubmit="ShoutBox.postShout(); $(\'shout_data\').value = \'\'; return false;">{$lang->mysb_shout} <input type="text" id="shout_data" size="50" /> - <input type="submit" value="{$lang->mysb_shoutnow}" id="shouting-status" /></form></td>
 </tr>
 <tr>
  <td class="trow1" width="76%"><div align="left" id="shoutbox_data" style="height: {$mybb->settings[\'mysb_height\']}px; overflow: auto;">{$lang->mysb_loading}</div></td>
-  <td class="trow1" width="12%" align="center">
-	<a style="cursor: pointer;" id="smilies" onclick="window.open(\'misc.php?action=smilies&popup=true&editor=clickableEditor\',\'{$lang->mysb_smilies}\',\'scrollbars=yes, menubar=no,width=460,height=360,toolbar=no\');">{$lang->mysb_smilies}</a>
-	<br />
-	<a style="cursor: pointer;" onclick="window.open(\'shoutbox.php\',\'{$lang->mysb_shoutbox}\',\'scrollbars=yes, menubar=no,width=825,height=449,toolbar=no\');">{$lang->mysb_popup_shoutbox}</a>
- </td>
 </tbody>
 </table>
 
@@ -496,41 +593,6 @@ Event.observe(window, \'load\', ShoutBox.showShouts);
 
 </body>
 </html>';
-
-	$mysb_portable_tpl = '
-	<html>
-<head>
-<title>{$lang->mysb_shoutbox}</title>
-{$headerinclude}
-<!--<SCRIPT>var timeID = setTimeout("document.forms[0].submit()", 30000)</SCRIPT>-->
-</head>
-<body>
-
-<form id="0" action="pspshoutbox.php"></form>
-
-<table border="0" cellspacing="1" cellpadding="4" class="tborder">
-<thead>
-<tr>
-<td class="thead" colspan="2">
-<form id="1" action="pspshoutbox.php?action=shout" method="post">{$lang->mysb_shout} <input type="hidden" name="postcode" value="{$mybb->post_code}" /> <input type="text" name="shout_data" size="50" /> - <input type="submit" value="{$lang->mysb_shoutnow}" id="shouting-status" /></form>
-</td>
-</tr>
-<tr>
-<td class="thead" colspan="2">
-<div><strong>{$lang->mysb_shoutbox}</strong> - <!--<a href="pspshoutbox.php">Refresh</a> --><small>(<a href="pspshoutbox.php?action=refresh">Refresh</a>)</small> <br /></div>
-</td>
-</tr>
-</thead>
-
-<tr>
- {$mysb_shoutbox_data}
-</tr>
-</table>
-
-</body>
-
-</html>';
-
 	$mysb_banned = '<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder">
 <tr>
 <td class="thead"><strong>{$lang->mysb_shoutbox}</strong></td>
@@ -545,12 +607,12 @@ Event.observe(window, \'load\', ShoutBox.showShouts);
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox', 'sid' => '-1', 'template' => $db->escape_string($mysb_shoutbox_tpl), 'version' => '1411', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox_full', 'sid' => '-1', 'template' => $db->escape_string($mysb_boxfull_tpl), 'version' => '1411', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox_popup', 'sid' => '-1', 'template' => $db->escape_string($mysb_popup_shoutbox_tpl), 'version' => '1411', 'status' => '', 'dateline' => TIME_NOW));
-	$db->insert_query('templates', array('title' => 'mysb_shoutbox_psp', 'sid' => '-1', 'template' => $db->escape_string($mysb_portable_tpl), 'version' => '1411', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox_banned', 'sid' => '-1', 'template' => $db->escape_string($mysb_banned), 'version' => '1411', 'status' => '', 'dateline' => TIME_NOW));
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 	
-	find_replace_templatesets('index', '#{\$boardstats}#', "{myshoutbox_".$mybb->settings['mysb_key']."}\n{\$boardstats}");
+	//find_replace_templatesets('index', '#{\$boardstats}#', "{myshoutbox_".$mybb->settings['mysb_key']."}\n{\$boardstats}");
+	find_replace_templatesets('index', '#' . preg_quote('{$forums}') . '#', '{myshoutbox_'.$mybb->settings['mysb_key'].'}{$forums}');
 
 }
 
@@ -582,7 +644,7 @@ function myshoutbox_is_installed()
 function myshoutbox_deactivate()
 {
 	global $db, $mybb;
-	$db->write_query("DELETE FROM ".TABLE_PREFIX."templates WHERE title IN('mysb_shoutbox','mysb_shoutbox_full','mysb_shoutbox_popup','mysb_shoutbox_popup_full','mysb_shoutbox_psp','mysb_shoutbox_banned') AND sid='-1'");
+	$db->write_query("DELETE FROM ".TABLE_PREFIX."templates WHERE title IN('mysb_shoutbox','mysb_shoutbox_full','mysb_shoutbox_popup','mysb_shoutbox_popup_full','mysb_shoutbox_banned') AND sid='-1'");
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 
@@ -626,142 +688,6 @@ function myshoutbox_load()
 	}
 }
 
-function myshoutbox_psp_show()
-{
-	global $db, $mybb, $templates, $lang, $footer, $headerinclude, $header, $charset;
-	
-	$lang->load('myshoutbox');
-	
-	// Send our headers.
-	header("Content-type: text/html; charset={$charset}");
-	
-	// Make navigation
-	add_breadcrumb($lang->mysb_shoutbox, "pspshoutbox.php");
-	$per_page = intval($mybb->settings['mysb_full_ppage']);
-
-	// pagination
-	$query = $db->simple_select("mysb_shouts", "COUNT(*) as shouts_count");
-	$shouts_count = $db->fetch_field($query, 'shouts_count');
-	
-	// Pagination
-	$per_page = intval($mybb->settings['mysb_full_ppage']);;
-	if(intval($mybb->input['page']) > 0)
-	{
-		$page = (int)$mybb->input['page'];
-		$start = ($page-1) * $per_page;
-		$pages = $shouts_count / $per_page;
-		$pages = ceil($pages);
-		if($page > $pages)
-		{
-			$start = 0;
-			$page = 1;
-		}
-	}
-	else
-	{
-		$start = 0;
-		$page = 1;
-	}
-	
-	// multi-page
-	if ($shouts_count > $per_page) {
-		$multipage = multipage($shouts_count, $per_page, $page, "pspshoutbox.php?action=full");		
-	}
-	
-	// get data
-	require_once MYBB_ROOT.'inc/class_parser.php';
-	$parser = new postParser;
-	
-	$usernames_cache = array();
-	
-	$query = $db->write_query("SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
-							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
-						 ORDER by s.id DESC LIMIT {$start}, {$per_page}");
-	
-	while ($row = $db->fetch_array($query))
-	{
-		$parser_options = array(
-				'allow_mycode' => $mybb->settings['mysb_allow_mycode'],
-				'allow_smilies' => $mybb->settings['mysb_allow_smilies'],
-				'allow_imgcode' => $mybb->settings['mysb_allow_imgcode'],
-				'allow_html' => $mybb->settings['mysb_allow_html'],
-				"allow_videocode" => $mybb->settings['mysb_allow_video'],
-				'me_username' => $row['username']
-			);
-			
-		$message = $parser->parse_message($row['shout_msg'], $parser_options);
-		
-		$find = stripos($message, "/pvt");
-		if($find == 0 && $find !== false)
-		{
-			sscanf($message, "/pvt %d", $userID);
-			$userID = (int)$userID;
-			$message = str_replace("/pvt ".$userID." ", "", $message);
-			if ($mybb->user['uid'] == intval($userID) || $mybb->user['uid'] == $row['uid'])
-			{
-				if ($mybb->user['uid'] == intval($userID))
-				{
-					$userName = $mybb->user['username'];
-				}
-				else {
-					// Unfortunately, we do not have this username...let's check our cache, if it's not in cache, query it
-					if (!empty($usernames_cache[$userID]))
-					{
-						$userName = $usernames_cache[$userID];
-					}
-					else {
-						$userName = $db->fetch_field($db->simple_select('users', 'username', 'uid=\''.$userID.'\''), 'username');
-						$usernames_cache[$userID] = $userName;
-					}
-				}
-				
-				$message = "<span style=\"background-color: #AF4300; font-weight: bold;\">{$lang->mysb_pvt_to} ".htmlspecialchars_uni($userName).": ".$message."</span>";
-		
-				$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
-
-				$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
-
-				$username = '<a href="./member.php?action=profile&uid='.$row['uid'].'" {$extra}>'.$row['username'].'</a>';
-				$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
-				$class = alt_trow();
-				
-				if (myshoutbox_can_delete() && $row['hidden'] == "yes") { 
-					$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td align=\"left\" class='{$class}'>&raquo; <strong><span style=\"color: #FF0000\";>{$lang->mysb_deleted_info}</span></strong> &raquo; {$username} - {$date_time} -- {$message}</td></tr>";
-				}
-				elseif ($row['hidden'] == "no")
-				{
-					$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td align=\"left\" class='{$class}'>&raquo; {$username} - {$date_time} -- {$message}</td></tr>";
-				}
-			}
-		}		
-		else {
-			$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
-
-			$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
-
-			$username = '<a href="./member.php?action=profile&uid='.$row['uid'].'" {$extra}>'.$row['username'].'</a>';
-			$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
-			$class = alt_trow();
-			
-			if (myshoutbox_can_delete() && $row['hidden'] == "yes") { 
-				$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td align=\"left\" class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; <strong><span style=\"color: #FF0000\";>{$lang->mysb_deleted_info}</span></strong> &raquo; {$username} - {$date_time} -- {$message}</span></td></tr>";
-			}
-			elseif ($row['hidden'] == "no")
-			{
-				$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td align=\"left\" class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$username} - {$date_time} -- {$message}</span></td></tr>";
-			}
-		}
-	}
-	
-	
-	eval("\$shoutbox = \"".$templates->get("mysb_shoutbox_psp")."\";");
-	
-	$db->write_query("SELECT * FROM ".TABLE_PREFIX."mysb_shouts ORDER by id DESC LIMIT 10");
-	
-	output_page($shoutbox);
-	exit;
-}
-
 function myshoutbox_show_full()
 {
 	global $db, $mybb, $templates, $lang, $footer, $headerinclude, $header, $charset;
@@ -775,7 +701,8 @@ function myshoutbox_show_full()
 	add_breadcrumb($lang->mysb_shoutbox, "index.php?action=full_shoutbox");
 
 	// pagination
-	$query = $db->simple_select("mysb_shouts", "COUNT(*) as shouts_count");
+	$query = $db->write_query("SELECT COUNT(*) AS shouts_count FROM ".TABLE_PREFIX."mysb_shouts s
+							WHERE s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . "%'");
 	$shouts_count = $db->fetch_field($query, 'shouts_count');
 	
 	// Pagination
@@ -811,6 +738,7 @@ function myshoutbox_show_full()
 	
 	$query = $db->write_query("SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
 							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
+							WHERE s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . "%' 
 						 ORDER by s.id DESC LIMIT {$start}, {$per_page}");
 	
 	while ($row = $db->fetch_array($query))
@@ -823,9 +751,21 @@ function myshoutbox_show_full()
 				"allow_videocode" => $mybb->settings['mysb_allow_video'],
 				'me_username' => $row['username']
 			);		
-			
+		
+		if($parser_options['allow_mycode']){
+			$row['shout_msg'] = strip_mycode($row['shout_msg']);
+		}
 		$message = $parser->parse_message($row['shout_msg'], $parser_options);
 
+		// Create the options for each shout- flag(report), delete, hide, and the hidden message
+		$report = myshoutbox_report_button($row['id'], $row['uid']);
+		$delete = "";
+		$hidden = "";
+		// Create our delete button
+		if(myshoutbox_can_delete()){
+			$delete = "<a href='#' onclick='ShoutBox.removeShout({$row[id]}, 0, \"{$lang->mysb_remconfirm}\");' title=\"{$lang->mysb_remove}\"><img src=\"{$mybb->settings['bburl']}/images/remove.png\" class=\"shoutbox-icon\"></a>";
+		}
+		
 		$find = stripos($message, "/pvt");
 		if($find == 0 && $find !== false)
 		{
@@ -850,30 +790,36 @@ function myshoutbox_show_full()
 					}
 				}
 				
-				$message = "<span style=\"background-color: #AF4300; font-weight: bold;\">{$lang->mysb_pvt_to} ".htmlspecialchars_uni($userName).": ".$message."</span>";
-		
-				$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
-
-				$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
-
-				$username = '<a href="./member.php?action=profile&uid='.$row['uid'].'" {$extra}>'.$row['username'].'</a>';
-				$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
+				$message = "<span class=\"shoutbox_pm\">{$lang->mysb_pvt_to} ".htmlspecialchars_uni($userName)."</span>: ".$message;
 				$class = alt_trow();
-	
-				$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$report}{$username} - {$date_time} -- {$message}</span></td></tr>";
 			}
+			else continue;
 		}		
 		else {
-			$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
-
-			$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
-
-			$username = '<a href="./member.php?action=profile&uid='.$row['uid'].'" {$extra}>'.$row['username'].'</a>';
-			$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
 			$class = alt_trow();
 		
-			$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$report}{$username} - {$date_time} -- {$message}</span></td></tr>";
+			// Generate our hide/show buttons and our HIDDEN message for hidden shouts
+			$temp = myshoutbox_hide_buttons($row['id'], $row['hidden']); // Will be an empty string if the user can't show/hide shouts
+			if($temp != "") $delete .= " " . $temp; // Add them after the delete button
+			$hidden = myshoutbox_hide_msg($row['id'],$row['hidden']);
 		}
+		
+		// Format their username & make it link to their profile
+		$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
+		$username = build_profile_link($row['username'], $row['uid']);
+		// Format date & time
+		$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
+		// Show their Ip to admins when they hover over the time & date of shout
+		$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
+		if($extra != "")$date_time = "<span $extra style=\"cursor:pointer\">$date_time</span>";
+		
+		// Create the buttons section of the message
+		$buttons = "";
+		if($delete != "" || $report != "") {
+			$buttons = "( {$delete} {$report} ) ";
+		}
+		
+		$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span></td></tr>";
 	}
 	
 	
@@ -963,7 +909,8 @@ function myshoutbox_show_shouts($last_id = 0)
 
 	$query = $db->write_query("SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
 							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
-						WHERE s.id>{$last_id} ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}");
+						WHERE s.id>{$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . "%') 
+						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}");
 	
 	// fetch results 
 	$messages = "";
@@ -971,8 +918,6 @@ function myshoutbox_show_shouts($last_id = 0)
 	$usernames_cache = array();
 	while ($row = $db->fetch_array($query))
 	{
-		$report = "(<a id=\"report_".$row['id']."\" href=\"#shoutbox\" onclick=\"javascript: return ShoutBox.promptReason(".$row['id'].");\" style=\"cursor: pointer;\">{$lang->mysb_report_button}</a>) ";
-		
 		$parser_options = array(
 				'allow_mycode' => $mybb->settings['mysb_allow_mycode'],
 				'allow_smilies' => $mybb->settings['mysb_allow_smilies'],
@@ -980,9 +925,22 @@ function myshoutbox_show_shouts($last_id = 0)
 				'allow_html' => $mybb->settings['mysb_allow_html'],
 				"allow_videocode" => $mybb->settings['mysb_allow_video'],
 				'me_username' => $row['username']
-			);		
-			
+		);		
+		
+		if($parser_options['allow_mycode']){
+			$row['shout_msg'] = strip_mycode($row['shout_msg']);
+		}
 		$message = $parser->parse_message($row['shout_msg'], $parser_options);
+		
+		// Create the options for each shout- PM (private message), flag(report), delete, hide, and the hidden message
+		$pm = myshoutbox_pm_button($row['uid']);
+		$report = myshoutbox_report_button($row['id'], $row['uid']);
+		$delete = "";
+		$hidden = "";
+		// Create our delete button
+		if(myshoutbox_can_delete()){
+			$delete = "<a href='#' onclick='ShoutBox.removeShout({$row[id]}, 1, \"{$lang->mysb_remconfirm}\");' title=\"{$lang->mysb_remove}\"><img src=\"{$mybb->settings['bburl']}/images/remove.png\" class=\"shoutbox-icon\"></a>";
+		}
 		
 		$find = stripos($message, "/pvt");
 		if($find == 0 && $find !== false)
@@ -1008,71 +966,44 @@ function myshoutbox_show_shouts($last_id = 0)
 					}
 				}
 				
-				$message = "<span style=\"background-color: #AF4300; font-weight: bold;\">{$lang->mysb_pvt_to} ".htmlspecialchars_uni($userName).": ".$message."</span>";
-			
-				$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
-				$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
-		
-				$username = $row['username'];
-				$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
-
-				if (myshoutbox_can_delete()) {
-					$delete = "(<a href='#shoutbox' onclick='javascript: return ShoutBox.deleteShout({$row[id]}, 1,\"{$lang->mysb_delconfirm}\");'>{$lang->mysb_delete}</a>) ";
-					if ($row['hidden'] == "yes"){
-						$recover = "(<a href='#shoutbox' onclick='javascript: return ShoutBox.recoverShout({$row[id]}, 1, \"{$lang->mysb_recconfirm}\");'>{$lang->mysb_recover}</a>) ";
-						$remove = "(<a href='#shoutbox' onclick='javascript: return ShoutBox.removeShout({$row[id]}, 1, \"{$lang->mysb_remconfirm}\");'>{$lang->mysb_remove}</a>) ";
-					}
-				}
-				else {
-					$delete = '&nbsp;';
-					$recover = '&nbsp;';
-					$remove = '&nbsp;';
-				}
-		
-				if (myshoutbox_can_delete() && $row['hidden'] == "yes") { 
-					$messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; <strong><span style=\"color: #FF0000\";>{$lang->mysb_deleted_info}</span></strong> &raquo; {$remove}{$recover}{$report}<a href='#' onClick=\"javascript: ShoutBox.pvtAdd(".$row['uid']."); return false;\" {$extra}>{$username}</a> - {$date_time} -- {$message}</span><br />\r\n";
-				}
-				elseif ($row['hidden'] == "no") $messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$delete}{$recover}{$report}<span style=\"\"><a href='#' onClick=\"javascript: ShoutBox.pvtAdd(".$row['uid']."); return false;\" {$extra}>{$username}</a></span> - {$date_time} -- {$message}</span><br />\r\n";
-		
+				$message = "<span class=\"shoutbox_pm\">{$lang->mysb_pvt_to} ".htmlspecialchars_uni($userName)."</span>: ".$message;
 				$entries++;
 		
 				if ($entries == 1) {
 					$maxid = $row['id'];
 				}
 			}
+			else continue;
 		}
 		else {
-			$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
-		
-			$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
-		
-			$username = ''.$row['username'].'';
-			$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
-
-			if (myshoutbox_can_delete()) {
-				$delete = "(<a href='#shoutbox' onclick='javascript: return ShoutBox.deleteShout({$row[id]}, 1,\"{$lang->mysb_delconfirm}\");'>{$lang->mysb_delete}</a>) ";
-				if ($row['hidden'] == "yes"){
-					$recover = "(<a href='#shoutbox' onclick='javascript: return ShoutBox.recoverShout({$row[id]}, 1, \"{$lang->mysb_recconfirm}\");'>{$lang->mysb_recover}</a>) ";
-					$remove = "(<a href='#shoutbox' onclick='javascript: return ShoutBox.removeShout({$row[id]}, 1, \"{$lang->mysb_remconfirm}\");'>{$lang->mysb_remove}</a>) ";
-				}
-			}
-			else {
-				$delete = '&nbsp;';
-				$recover = '&nbsp;';
-				$remove = '&nbsp;';
-			}
-		
-			if (myshoutbox_can_delete() && $row['hidden'] == "yes") { 
-				$messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; <strong><span style=\"color: #FF0000\";>{$lang->mysb_deleted_info}</span></strong> &raquo; {$remove}{$recover}{$report}<a href='#' onClick=\"javascript: ShoutBox.pvtAdd(".$row['uid']."); return false;\" {$extra}>{$username}</a> - {$date_time} -- {$message}</span><br />\r\n";
-			}
-			elseif ($row['hidden'] == "no") $messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$delete}{$recover}{$report}<a href='#' onClick=\"javascript: ShoutBox.pvtAdd(".$row['uid']."); return false;\" {$extra}>{$username}</a> - {$date_time} -- {$message}</span><br />\r\n";
-		
+			// Generate our hide/show buttons and our HIDDEN message for hidden shouts
+			$temp = myshoutbox_hide_buttons($row['id'], $row['hidden']); // Will be an empty string if the user can't show/hide shouts
+			if($temp != "") $delete .= " " . $temp; // Add them after the delete button
+			$hidden = myshoutbox_hide_msg($row['id'],$row['hidden']);
+			
 			$entries++;
 		
 			if ($entries == 1) {
 				$maxid = $row['id'];
 			}
 		}
+		// Format their username & make it link to their profile
+		$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
+		$username = build_profile_link($row['username'], $row['uid']);
+		// Format date & time
+		$date_time = my_date($mybb->settings['mysb_datetime'], $row['shout_date']);
+		// Show their Ip to admins when they hover over the time & date of shout
+		$extra = ($mybb->usergroup['cancp'] == 1 ? "title='{$row[shout_ip]}'" : "");
+		if($extra != "")$date_time = "<span $extra style=\"cursor:pointer\">$date_time</span>";
+		
+		// Create the buttons section of the message
+		$buttons = "";
+		if($delete != "" || $report != "" || $pm != "") {
+			$buttons = "( {$delete} {$report} {$pm} ) ";
+		}
+		
+		// Format our output
+		$messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span><br />\r\n";
 	}
 	
 	if (!$maxid) {
@@ -1129,35 +1060,6 @@ function myshoutbox_report_shout($reason, $sid)
 	exit;
 }
 
-function myshoutbox_psp_add_shout()
-{
-	global $db, $mybb;
-	
-	$perms = myshoutbox_can_view();
-	
-	// guests not allowed! neither banned people
-	if (!$perms || $perms === 2 || $mybb->user['usergroup'] == 1 || !$mybb->user['uid'])
-	{
-		die("failed!");
-	}
-	
-	$shout_data = array(
-			'uid' => (int)$mybb->user['uid'],
-			'shout_msg' => $db->escape_string(str_replace('^--^', '-', $mybb->input['shout_data'])),
-			'shout_date' => TIME_NOW,
-			'shout_ip' => get_ip(),
-			'hidden' => "no"
-		);
-		
-	if ($db->insert_query('mysb_shouts', $shout_data)) {
-		redirect("pspshoutbox.php", "Success! Redirecting..", "Success!");
-	} else {
-		redirect("pspshoutbox.php", "Failed! Redirecting..", "Failed!");
-	}
-	
-	exit;
-}
-
 function myshoutbox_add_shout()
 {
 	global $db, $mybb;
@@ -1210,7 +1112,7 @@ function myshoutbox_add_shout()
 	}
 	
 	// flood check
-	if (intval($mybb->settings['mysb_flood_time']) && !is_moderator()) {
+	if (intval($mybb->settings['mysb_flood_time']) && mysb_obey_cooldown()) {
 		$lastShout = $db->fetch_field($db->simple_select('mysb_shouts', 'MAX(shout_date) as lastShout', 'uid = '.intval($mybb->user['uid'])), 'lastShout');
 		$interval = time() - $lastShout;
 		
@@ -1226,10 +1128,12 @@ function myshoutbox_add_shout()
 		if ($userID < 1)
 			die("failed!");
 	}
+
+	$shout_msg = $db->escape_string(mb_strimwidth(str_replace('^--^', '-', $mybb->input['shout_data']), 0, 300, '', 'UTF-8'));
 	
 	$shout_data = array(
 			'uid' => $mybb->user['uid'],
-			'shout_msg' => $db->escape_string(str_replace('^--^', '-', $mybb->input['shout_data'])),
+			'shout_msg' => $shout_msg,
 			'shout_date' => time(),
 			'shout_ip' => get_ip(),
 			'hidden' => "no"
@@ -1340,6 +1244,36 @@ function myshoutbox_can_view()
 	return true;
 
 }
+
+
+function mysb_obey_cooldown(){
+	// If there are no cooldown groups, don't obey cooldown
+	if (empty($mybb->settings['mysb_cooldown_groups']))return false;
+		
+	// Expand list of cooldown groups into array
+	$groups = explode(",", $mybb->settings['mysb_cooldown_groups']);
+	
+	// If user's primary group is in the cooldown groups, obey cooldown
+	if (in_array($mybb->user['usergroup'], $groups))return true;
+	
+	
+	// Now check additional groups
+	// If checking additional groups is disabled and we reach this point, don't obey cooldown
+	if($mybb->settings['mysb_additional_groups'] !== 1)return false;
+	
+	// Expand list of user's additional groups if shoutbox additional group checking is enabled
+	$add_groups = "";
+	if($mybb->settings['mysb_additional_groups'] == 1 && $mybb->user['additionalgroups']){
+		$add_groups = explode(",", $mybb->user['additionalgroups']);
+	}
+	// No additional groups
+	if(empty($add_groups))return false;
+	
+	// If at least one of their additional groups is in the obey cooldown list, obey cooldown
+	if (count(array_intersect($add_groups, $groups)) > 0)return true;
+	return false;
+}
+
 
 function myshoutbox_admin_home_menu(&$sub_menu)
 {
@@ -1692,4 +1626,75 @@ function myshoutbox_jsspecialchars($str)
 	return strtr($string, array("\n" => '\n', "\r" => '\r', '\\' => '\\\\', '"' => '\x22', "'" => '\x27', '<' => '&lt;', '>' => '&gt;'));
 }
 
+/*
+	Borrowed from inferno shoutbox inc/plugins/inferno/class_core.php
+	Removes disallowed mycode based on a setting
+*/
+function strip_mycode($string)
+{
+	global $mybb;
+	$disallowed = explode(',', $mybb->settings['mysb_banned_mycode']);
+
+	foreach ($disallowed as $code)
+	{
+		$string = preg_replace_callback('#(\[' . $code . '(?:.*?)\](.*?)\[\/' . $code . '\])#', create_function('$matches', 'return empty($matches[2]) ? "." : $matches[2];'), $string);
+	}
+
+	return $string;
+}
+
+/*
+	Generates the HIDDEN message displayed next to hidden shouts.
+*/
+function myshoutbox_hide_msg($sid, $hidden){
+	global $lang;
+	$lang->load('myshoutbox');
+	
+	// Create our HIDDEN message.
+	// If the shout is hidden, it will display the HIDDEN message.
+	if(myshoutbox_can_delete()){
+		// Adds the red "HIDDEN" message to the front of the shout
+		return "<span style=\"".($hidden == "yes"?"display:inline;":"display:none;")." color: #FF0000\"; id=\"shout-hidemsg-{$sid}\"><strong>{$lang->mysb_deleted_info}</strong> &raquo; </span>";
+	}
+	return "";
+}
+
+/*
+	Generates the hide/show buttons next to shouts
+*/
+function myshoutbox_hide_buttons($sid, $ishidden){
+	global $lang, $mybb;
+	$lang->load('myshoutbox');
+	$ret = "";
+	
+	// Create our hide and recover buttons
+	// If the shout is hidden, it will display the recover button. Else, it will display the hide button.
+	if(myshoutbox_can_delete()){
+		// Hide Button
+		$ret = "<a style=\"".($ishidden == "yes"?"display:none;":"display:inline;")."\" id=\"shout-hide-{$sid}\" href='javascript:void(0)' onclick='ShoutBox.deleteShout({$sid}, 0);' title=\"{$lang->mysb_hide}\"><img src=\"{$mybb->settings['bburl']}/images/mysb-hide-icon.png\" class=\"shoutbox-icon\"></a> ";
+		// Recover Button
+		$ret .= "<a style=\"".($ishidden == "yes"?"display:inline;":"display:none;")."\" id=\"shout-recover-{$sid}\" href='javascript:void(0)' onclick='ShoutBox.recoverShout({$sid}, 0);' title=\"{$lang->mysb_reveal}\"><img src=\"{$mybb->settings['bburl']}/images/mysb-show-icon.png\" class=\"shoutbox-icon\"></a> ";
+	}
+	return $ret;
+}
+
+/*
+	Generates the report button placed next to shouts
+*/
+function myshoutbox_report_button($sid, $uid){
+	global $lang, $mybb;
+	$lang->load('myshoutbox');
+	if($mybb->user['uid'] != $uid)return "<a href='javascript:void(0)' onclick='ShoutBox.promptReason({$sid});' title=\"{$lang->mysb_report}\"><img src=\"{$mybb->settings['bburl']}/images/usercp/pmtracking.gif\" class=\"shoutbox-icon\"></a>";
+	return "";
+}
+
+/*
+	Generates the private message button placed in front of shouts
+*/
+function myshoutbox_pm_button($uid){
+	global $lang, $mybb;
+	$lang->load('myshoutbox');
+	if($mybb->user['uid'] != $uid)return "<a href=\"javascript:void(0)\" onClick=\"ShoutBox.pvtAdd(".$uid.");\" title=\"{$lang->mysb_pm}\"><img src=\"{$mybb->settings['bburl']}/images/fw_pm.gif\" class=\"shoutbox-icon\"></a>";
+	return "";
+}
 ?>
