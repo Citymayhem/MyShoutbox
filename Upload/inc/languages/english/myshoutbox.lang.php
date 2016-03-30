@@ -1,0 +1,53 @@
+<?php
+
+$l['mysb_no_shouts_display'] = 'There are no shouts to display.';
+$l['mysb_posting']  = 'Shouting...';
+$l['mysb_shoutnow'] = 'Shout Now!';
+$l['mysb_loading']  = 'Loading...';
+$l['mysb_flood_check'] = 'Flood check! Please try again in <interval> seconds.';
+$l['mysb_no_perform']  = "Couldn\'t shout or perform action. Please try again!";
+$l['mysb_sending']  = 'Sending message...';
+$l['mysb_sendnow'] = 'Send!';
+$l['mysb_already_sent'] ='Error: you have already sent a message to this user. Wait until the user deletes the message.';
+$l['mysb_deleted'] ='Deleted!';
+$l['mysb_invalid'] ='Invalid user id';
+$l['mysb_self'] ='You cannot send a message to yourself.';
+$l['mysb_refresh'] = 'Refresh';
+$l['mysb_refreshtitle'] ='Refresh the shoutbox. Note that the shoutbox refreshes automatically every {1} seconds.';
+$l['mysb_talkbot'] = 'Talk to Bot';
+$l['mysb_shout'] = 'Shout:';
+$l['mysb_shoutbox'] = 'Shout Box';
+$l['mysb_message_delete'] = 'Delete';
+$l['mysb_message_delconfirm'] = 'Do you really wish to delete this message?';
+$l['mysb_delconfirm'] = 'Do you really wish to hide this shout?';
+$l['mysb_recconfirm'] = 'Do you really wish to recover this shout?';
+$l['mysb_remconfirm'] = 'Do you really wish to remove this shout? (After removing the shout, you cannot recover it)';
+$l['mysb_delete'] = 'hide';
+$l['mysb_recover'] = 'recover';
+$l['mysb_report_button'] = "report";
+$l['mysb_remove'] = 'remove';
+$l['mysb_fullsbox'] = 'View Full Shout Box';
+$l['mysb_uid'] = 'UserID:';
+$l['mysb_sendnow_desc'] = 'This will display a message for the specified user, telling him you want to talk to him';
+$l['mysb_send_message'] = '{1} wants to talk to you';
+$l['mysb_botname'] = 'Shoutbox Bot';
+$l['mysb_error_ban']  = 'You have been banned from the shoutbox for the following reason:<br /><ul><li>{1}</li></ul>';
+$l['mysb_error'] = 'Error';
+$l['mysb_user_reported'] = "User reported!";
+$l['mysb_report'] = "Report";
+$l['mysb_report_user'] = "User to report:";
+$l['mysb_report_reason'] = "Reason:";
+$l['mysb_report_sid'] = "Shout ID:";
+$l['mysb_shout_already_reported'] = "You have reported that shout already!";
+$l['mysb_report_invalid_sid'] = "Such shout does not exist.";
+$l['mysb_shout_reported'] = "The selected shout has been reported successfully!";
+$l['mysb_popup_shoutbox'] = 'Popup Shoutbox';
+$l['mysb_portable'] = 'Portable Device version';
+$l['mysb_smilies'] = 'Smilies';
+$l['mysb_options'] = 'Options';
+$l['mysb_portable_refreshing_title'] = 'Refreshing...';
+$l['mysb_portable_refreshing_message'] = 'Success!';
+$l['mysb_pvt_to'] = 'Private Shout to';
+$l['mysb_deleted_info'] = 'DELETED';
+
+?>
