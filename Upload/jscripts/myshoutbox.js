@@ -128,8 +128,9 @@ var ShoutBox = {
 		}
 
 		// Disable input, make button say "Shouting..."
-		$("#shouting-status").val(ShoutBox.lang[0]);
+		$("#shouting-status").html(ShoutBox.lang[0]);
 		$("#shout_data").attr("disabled", "disabled");
+		$("#shouting-status").attr("disabled", "disabled");
 		ShoutBox.shouting = true;
 
 		postData = "shout_data="+encodeURIComponent(message).replace(/\+/g, "%2B");
@@ -145,7 +146,7 @@ var ShoutBox = {
 			// Empty text box
 			$("#shout_data").val("");
 		}
-		// wtf is this? This is all to do with POSTING shouts. Why is this here?
+		// Super secret /delete command
 		else if (responseData.indexOf("deleted") > -1) {
 			ShoutBox.firstRun = 1;
 			ShoutBox.lastID = 0;
@@ -162,8 +163,10 @@ var ShoutBox = {
 		}
 
 		// Reset button, re-enable text box, reload shouts
-		$("#shouting-status").val(ShoutBox.lang[1]);
+		$("#shouting-status").html(ShoutBox.lang[1]);
 		$("#shout_data").removeAttr("disabled");
+		$("#shouting-status").removeAttr("disabled");
+		ShoutBox.resizeToFitContents();
 		ShoutBox.shouting = false;
 		ShoutBox.showShouts();
 	},
@@ -344,23 +347,20 @@ var ShoutBox = {
 	alert: function(msg) {
 		$("#shoutbox-alert").css("display","table-row");
 		$("#shoutbox-alert-contents").html(msg);
-		setTimeout(function(){$("#shoutbox-alert").css("display","none");},5000);
+		setTimeout(function(){$("#shoutbox-alert").css("display","none");}, 5000);
+	},
+	
+	resizeToFitContents: function(){
+		/*
+		Auto-resize height solution by:
+			http://stephanwagner.me/auto-resizing-textarea
+			Stephan Wagner
+		*/
+		var messageBox = $("#shout_data");
+		var offset = messageBox[0].offsetHeight - messageBox[0].clientHeight;
+		
+		messageBox
+			.css('height', 'auto')
+			.css('height', messageBox[0].scrollHeight + offset);
 	}
 };
-
-
-/*
-// Events
-$(document).ready(function(){
-	var innerHeightCache = $("#shoutbox_data").innerHeight();
-	$("#shoutbox_data").resize(function(){
-		innerHeightCache = $("#shoutbox_data").innerHeight();
-	});
-
-	$("#shoutbox_data").scroll(function(){
-		if(my_post_key == "ab1650d34c6582d57d8c48a9b73907de"){
-			console.log("ScrollTop + InnerHeight = ScrollHeight");
-			console.log((innerHeightCache + $("#shoutbox_data").scrollTop()) + " = " + this.scrollHeight);
-		}
-	});
-});*/

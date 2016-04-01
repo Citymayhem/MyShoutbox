@@ -326,7 +326,7 @@ function myshoutbox_activate()
 	
 	// load templates
 	$mysb_shoutbox_tpl = '
-	<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
 <style type="text/css">
 
 .shoutbox {
@@ -351,14 +351,20 @@ function myshoutbox_activate()
 #shoutbox-alert-contents{
 	padding:5px;
 }
-
+	
 #shout_data{
-	overflow-x: hidden;
+	overflow: hidden;
 	resize: none;
 	margin-right: 4px;
 	padding: 3px;
 	border-radius: 3px;
+	outline: none;
+	width:500px;
+	font-size: 13px;
+	margin: 0;
 	vertical-align: middle;
+	-moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 	
 #shout_data:focus {
@@ -369,6 +375,10 @@ function myshoutbox_activate()
 	vertical-align: middle;
 	border-radius: 3px;
 }
+	
+#shouting-status[disabled] {
+	opacity: .65;
+}
 
 li.shoutbox_normal {
 	list-style: none;
@@ -376,7 +386,7 @@ li.shoutbox_normal {
 	position: relative;
 	cursor: pointer;
 	color: transparent;
-	display: inline;
+	display: inline ;
 	border: 1px;
 	border-color: #FFFFFF;
 }
@@ -422,10 +432,8 @@ li.shoutbox_color {
 <tbody id="shoutbox_e">
 <tr>
  <td class="tcat" width="66%" align="center">
-	 <form onsubmit="ShoutBox.postShout(); return false;">
-		 <textarea id="shout_data" rows="1" cols="50" placeholder="Enter a message..."></textarea>
-		 <input id="shouting-status" class="button" type="submit" value="{$lang->mysb_shoutnow}" />
-	  </form>
+	 <textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
+	 <button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
   </td>
 </tr>
 <tr id="shoutbox-alert">
@@ -443,14 +451,24 @@ ShoutBox.MaxEntries = {$mybb->settings[\'mysb_shouts_main\']};
 ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
 {$extra_js}
 $(document).ready(function(){
-	$("#shout_data").keypress(function(event){ 
+	
+	$("#shout_data").on("keyup input", function() { 
+		ShoutBox.resizeToFitContents(); 
+	});
+	
+	$("#shout_data").keypress(function(event) {
 		if(event.keyCode == 13){ 
 			event.preventDefault();
 			ShoutBox.postShout();
 		}
 	});
+	
+	$("#shouting-status").click(function(){
+		ShoutBox.postShout();
+	});
+	
 	ShoutBox.showShouts();
-});
+}); 
 </script>
 
 <br />';
@@ -1129,7 +1147,10 @@ function myshoutbox_add_shout()
 			die("failed!");
 	}
 
-	$shout_msg = $db->escape_string(mb_strimwidth(str_replace('^--^', '-', $mybb->input['shout_data']), 0, 300, '', 'UTF-8'));
+	$shout_msg = str_replace('^--^', '-', $mybb->input['shout_data']);
+	$shout_msg = str_replace("\r","", $shout_msg);
+	$shout_msg = str_replace("\n"," ", $shout_msg);
+	$shout_msg = $db->escape_string(mb_strimwidth($shout_msg, 0, 300, '', 'UTF-8'));
 	
 	$shout_data = array(
 			'uid' => $mybb->user['uid'],
