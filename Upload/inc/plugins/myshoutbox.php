@@ -59,7 +59,7 @@ function myshoutbox_install()
 		"title"		=> "MyShoutbox",
 		"description"	=> "Settings for the MyShoutbox plugin.",
 		"disporder"	=> "1",
-		"isdefault"	=> "no",
+		"isdefault"	=> "0",
 	);
     
 	$db->insert_query("settinggroups", $shoutbox_group);
@@ -328,16 +328,10 @@ function myshoutbox_activate()
 	$mysb_shoutbox_tpl = '
 <script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
 <style type="text/css">
-
 .shoutbox {
 	margin: 0;
 	padding: 0;
 	left: 0;
-}
-
-.shoutbox-icon{
-	max-width:12px;
-	max-height:12px;
 }
 
 #shoutbox-alert{
@@ -350,6 +344,10 @@ function myshoutbox_activate()
 
 #shoutbox-alert-contents{
 	padding:5px;
+}
+
+#shout-controls-row {
+	position: relative;
 }
 	
 #shout_data{
@@ -378,6 +376,14 @@ function myshoutbox_activate()
 	
 #shouting-status[disabled] {
 	opacity: .65;
+}
+
+#shout-reverse-button {
+	position: absolute;
+	height: 100%;
+	top: 3px;
+	right: 3px;
+	cursor: pointer;
 }
 
 li.shoutbox_normal {
@@ -413,9 +419,25 @@ li.shoutbox_color {
 	background:#08f;
 	color:white;
 }
+
 .shoutbox_pm a{
 	color:#005500;
 	font-weight:bold;
+}
+
+.shoutbox-icons {
+	display: inline-block;
+	padding-right: 5px;
+	margin-right: 5px;
+	border-right: 1px solid #ccc;
+}
+
+.shoutbox-icon {
+	margin-left: 10px;
+}
+
+.shoutbox-icon: hover{
+	text-decoration: none;
 }
 </style>
 
@@ -478,14 +500,26 @@ $(document).ready(function(){
 <script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
 <title>Full Shoutbox</title>
 <style>
-.shoutbox-icon{
-	max-width:12px;
-	max-height:12px;
+.shoutbox-icons {
+	display: inline-block;
+	padding-right: 5px;
+	margin-right: 5px;
+	border-right: 1px solid #ccc;
 }
+
+.shoutbox-icon {
+	margin-left: 10px;
+}
+
+.shoutbox-icon: hover{
+	text-decoration: none;
+}
+
 .shoutbox_pm{
 	background:#08f;
 	color:white;
 }
+
 .shoutbox_pm a{
 	color:#005500;
 	font-weight:bold;
@@ -630,7 +664,8 @@ Event.observe(window, \'load\', ShoutBox.showShouts);
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 	
 	//find_replace_templatesets('index', '#{\$boardstats}#', "{myshoutbox_".$mybb->settings['mysb_key']."}\n{\$boardstats}");
-	find_replace_templatesets('index', '#' . preg_quote('{$forums}') . '#', '{myshoutbox_'.$mybb->settings['mysb_key'].'}{$forums}');
+	find_replace_templatesets('index', '#' . preg_quote('{$forums}') . '#', '{myshoutbox_'.$mybb->settings['mysb_key'].'}
+{$forums}');
 
 }
 
@@ -776,16 +811,14 @@ function myshoutbox_show_full()
 		$message = $parser->parse_message($row['shout_msg'], $parser_options);
 
 		// Create the options for each shout- flag(report), delete, hide, and the hidden message
-		$report = myshoutbox_report_button($row['id'], $row['uid']);
-		$delete = "";
+		$reportButton = myshoutbox_report_button($row['id'], $row['uid']);
+		$deleteButton = myshoutbox_delete_button($row[id]);
+		$hideButton = "";
 		$hidden = "";
-		// Create our delete button
-		if(myshoutbox_can_delete()){
-			$delete = "<a href='#' onclick='ShoutBox.removeShout({$row[id]}, 0, \"{$lang->mysb_remconfirm}\");' title=\"{$lang->mysb_remove}\"><img src=\"{$mybb->settings['bburl']}/images/remove.png\" class=\"shoutbox-icon\"></a>";
-		}
 		
 		$find = stripos($message, "/pvt");
-		if($find == 0 && $find !== false)
+		$isPrivateMessage = $find == 0 && $find !== false;
+		if($isPrivateMessage)
 		{
 			sscanf($message, "/pvt %d", $userID);
 			$userID = (int)$userID;
@@ -817,8 +850,7 @@ function myshoutbox_show_full()
 			$class = alt_trow();
 		
 			// Generate our hide/show buttons and our HIDDEN message for hidden shouts
-			$temp = myshoutbox_hide_buttons($row['id'], $row['hidden']); // Will be an empty string if the user can't show/hide shouts
-			if($temp != "") $delete .= " " . $temp; // Add them after the delete button
+			$hideButton = myshoutbox_hide_buttons($row['id'], $row['hidden']); // Will be an empty string if the user can't show/hide shouts
 			$hidden = myshoutbox_hide_msg($row['id'],$row['hidden']);
 		}
 		
@@ -832,10 +864,9 @@ function myshoutbox_show_full()
 		if($extra != "")$date_time = "<span $extra style=\"cursor:pointer\">$date_time</span>";
 		
 		// Create the buttons section of the message
-		$buttons = "";
-		if($delete != "" || $report != "") {
-			$buttons = "( {$delete} {$report} ) ";
-		}
+		$isHidden = $row['hidden'] == "yes";
+		$showPMButton = false;
+		$buttons = myshoutbox_generate_buttons($row['id'], $row['uid'], $showPMButton, !$isPrivateMessage, $isHidden);
 		
 		$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span></td></tr>";
 	}
@@ -950,15 +981,7 @@ function myshoutbox_show_shouts($last_id = 0)
 		}
 		$message = $parser->parse_message($row['shout_msg'], $parser_options);
 		
-		// Create the options for each shout- PM (private message), flag(report), delete, hide, and the hidden message
-		$pm = myshoutbox_pm_button($row['uid']);
-		$report = myshoutbox_report_button($row['id'], $row['uid']);
-		$delete = "";
 		$hidden = "";
-		// Create our delete button
-		if(myshoutbox_can_delete()){
-			$delete = "<a href='#' onclick='ShoutBox.removeShout({$row[id]}, 1, \"{$lang->mysb_remconfirm}\");' title=\"{$lang->mysb_remove}\"><img src=\"{$mybb->settings['bburl']}/images/remove.png\" class=\"shoutbox-icon\"></a>";
-		}
 		
 		$find = stripos($message, "/pvt");
 		if($find == 0 && $find !== false)
@@ -994,9 +1017,7 @@ function myshoutbox_show_shouts($last_id = 0)
 			else continue;
 		}
 		else {
-			// Generate our hide/show buttons and our HIDDEN message for hidden shouts
-			$temp = myshoutbox_hide_buttons($row['id'], $row['hidden']); // Will be an empty string if the user can't show/hide shouts
-			if($temp != "") $delete .= " " . $temp; // Add them after the delete button
+			// Generate HIDDEN message for hidden shouts
 			$hidden = myshoutbox_hide_msg($row['id'],$row['hidden']);
 			
 			$entries++;
@@ -1019,6 +1040,10 @@ function myshoutbox_show_shouts($last_id = 0)
 		if($delete != "" || $report != "" || $pm != "") {
 			$buttons = "( {$delete} {$report} {$pm} ) ";
 		}
+		
+		$isHidden = $row['hidden'] == "yes";
+		$tryShowPMButton = true;
+		$buttons = myshoutbox_generate_buttons($row['id'], $row['uid'], $tryShowPMButton, !$isPrivateMessage, $isHidden);
 		
 		// Format our output
 		$messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span><br />\r\n";
@@ -1680,21 +1705,44 @@ function myshoutbox_hide_msg($sid, $hidden){
 	return "";
 }
 
+function myshoutbox_generate_buttons($shoutId, $userId, $tryShowPMButton, $showHideButtons, $isHidden = false) {
+	$buttons = "";
+	
+	$reportButton = myshoutbox_report_button($shoutId, $userId);
+	$deleteButton = myshoutbox_delete_button($shoutId);
+	$hideButton = $showHideButtons ? myshoutbox_hide_buttons($shoutId, $isHidden) : "";
+	$pmButton = $tryShowPMButton ? myshoutbox_pm_button($userId) : "";
+	
+	if($deleteButton != "" || $hideButton != "" || $reportButton != "" || $pmButton != "") {
+		$buttons = "<div class=\"shoutbox-icons\">{$deleteButton}{$hideButton}{$reportButton}{$pmButton}</div>";
+	}
+	return $buttons;
+}
+
+function myshoutbox_delete_button($shoutId)
+{
+	global $lang, $mybb;
+	$delete = "";
+	if(myshoutbox_can_delete()){
+		$delete = "<a href='#' class='shoutbox-icon' onclick='ShoutBox.removeShout({$shoutId}, 0, \"{$lang->mysb_remconfirm}\");' title=\"{$lang->mysb_remove}\"><i class=\"fa fa-times\"></i></a>";
+	}
+	return $delete;
+}
+
 /*
 	Generates the hide/show buttons next to shouts
 */
 function myshoutbox_hide_buttons($sid, $ishidden){
 	global $lang, $mybb;
-	$lang->load('myshoutbox');
 	$ret = "";
 	
 	// Create our hide and recover buttons
 	// If the shout is hidden, it will display the recover button. Else, it will display the hide button.
 	if(myshoutbox_can_delete()){
 		// Hide Button
-		$ret = "<a style=\"".($ishidden == "yes"?"display:none;":"display:inline;")."\" id=\"shout-hide-{$sid}\" href='javascript:void(0)' onclick='ShoutBox.deleteShout({$sid}, 0);' title=\"{$lang->mysb_hide}\"><img src=\"{$mybb->settings['bburl']}/images/mysb-hide-icon.png\" class=\"shoutbox-icon\"></a> ";
+		$ret = "<a id=\"shout-hide-{$sid}\" class=\"shoutbox-icon\" <a style=\"".($ishidden == "yes"?"display:none;":"display:inline;")."\" href='javascript:void(0)' onclick='ShoutBox.deleteShout({$sid}, 0);' title=\"{$lang->mysb_hide}\"><i class=\"fa fa-eye-slash\"></i></a>";
 		// Recover Button
-		$ret .= "<a style=\"".($ishidden == "yes"?"display:inline;":"display:none;")."\" id=\"shout-recover-{$sid}\" href='javascript:void(0)' onclick='ShoutBox.recoverShout({$sid}, 0);' title=\"{$lang->mysb_reveal}\"><img src=\"{$mybb->settings['bburl']}/images/mysb-show-icon.png\" class=\"shoutbox-icon\"></a> ";
+		$ret .= "<a id=\"shout-recover-{$sid}\" class=\"shoutbox-icon\" <a style=\"".($ishidden == "yes"?"display:inline;":"display:none;")."\" href='javascript:void(0)' onclick='ShoutBox.recoverShout({$sid}, 0);' title=\"{$lang->mysb_reveal}\"><i class=\"fa fa-eye\"></i></a>";
 	}
 	return $ret;
 }
@@ -1704,8 +1752,8 @@ function myshoutbox_hide_buttons($sid, $ishidden){
 */
 function myshoutbox_report_button($sid, $uid){
 	global $lang, $mybb;
-	$lang->load('myshoutbox');
-	if($mybb->user['uid'] != $uid)return "<a href='javascript:void(0)' onclick='ShoutBox.promptReason({$sid});' title=\"{$lang->mysb_report}\"><img src=\"{$mybb->settings['bburl']}/images/usercp/pmtracking.gif\" class=\"shoutbox-icon\"></a>";
+		
+	if($mybb->user['uid'] != $uid)return "<a class=\"shoutbox-icon\" href='javascript:void(0)' onclick='ShoutBox.promptReason({$sid});' title=\"{$lang->mysb_report}\"><i class=\"fa fa-flag\"></i></a>";
 	return "";
 }
 
@@ -1714,8 +1762,7 @@ function myshoutbox_report_button($sid, $uid){
 */
 function myshoutbox_pm_button($uid){
 	global $lang, $mybb;
-	$lang->load('myshoutbox');
-	if($mybb->user['uid'] != $uid)return "<a href=\"javascript:void(0)\" onClick=\"ShoutBox.pvtAdd(".$uid.");\" title=\"{$lang->mysb_pm}\"><img src=\"{$mybb->settings['bburl']}/images/fw_pm.gif\" class=\"shoutbox-icon\"></a>";
+	if($mybb->user['uid'] != $uid)return "<a class=\"shoutbox-icon\" href=\"javascript:void(0)\" onClick=\"ShoutBox.pvtAdd(".$uid.");\" title=\"{$lang->mysb_pm}\"><i class=\"fa fa-envelope-o\"></i></a>";
 	return "";
 }
 ?>
