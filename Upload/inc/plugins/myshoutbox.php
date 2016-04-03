@@ -328,14 +328,10 @@ function myshoutbox_activate()
 	$mysb_shoutbox_tpl = '
 <script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
 <style type="text/css">
-.shoutbox {
-	margin: 0;
-	padding: 0;
-	left: 0;
-}
-
 #shoutbox-alert{
 	display:none;
+	border-left: 0;
+	border-right: 0;
 }
 
 #shoutbox-alert td{
@@ -348,6 +344,7 @@ function myshoutbox_activate()
 
 #shout-controls-row {
 	position: relative;
+	text-align: center;
 }
 	
 #shout_data{
@@ -384,6 +381,7 @@ function myshoutbox_activate()
 	top: 3px;
 	right: 3px;
 	cursor: pointer;
+	font-size: 20px;
 }
 
 li.shoutbox_normal {
@@ -439,33 +437,36 @@ li.shoutbox_color {
 .shoutbox-icon: hover{
 	text-decoration: none;
 }
+
+#shoutbox_data {
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	border: 0;
+}
 </style>
 
-<table border="0" cellspacing="1" cellpadding="4" class="tborder">
-<thead>
-<tr>
-<td class="thead" colspan="2">
-<div class="expcolimage"><img src="{$theme[\'imgdir\']}/collapse.gif" id="shoutbox_img" class="expander" alt="[-]" /></div>
-<div><strong>{$lang->mysb_shoutbox}</strong> (<a href="index.php?action=full_shoutbox">{$lang->mysb_fullsbox}</a> - <a style="cursor: pointer;" onclick="window.open(\'shoutbox.php\',\'{$lang->mysb_shoutbox}\',\'scrollbars=yes, menubar=no,width=825,height=449,toolbar=no\');">{$lang->mysb_popup_shoutbox}</a>)<br /></div>
-</td>
-</tr>
-</thead>
+<div class="tborder">
+	<div class="thead">
+		<div class="expcolimage"><img src="{$theme[\'imgdir\']}/collapse.gif" id="shoutbox_img" class="expander" alt="[-]" /></div>
+		<div>
+			<strong>{$lang->mysb_shoutbox}</strong> (<a href="index.php?action=full_shoutbox">{$lang->mysb_fullsbox}</a> - <a style="cursor: pointer;" onclick="window.open(\'shoutbox.php\',\'{$lang->mysb_shoutbox}\',\'scrollbars=yes, menubar=no,width=825,height=449,toolbar=no\');">{$lang->mysb_popup_shoutbox}</a>)
+		</div>
+	</div>
 
-<tbody id="shoutbox_e">
-<tr>
- <td class="tcat" width="66%" align="center">
-	 <textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
-	 <button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
-  </td>
-</tr>
-<tr id="shoutbox-alert">
- <td class="trow1"><div id="shoutbox-alert-contents"></div></td>
-</tr>
-<tr>
- <td class="trow1" width="76%" style="padding:0"><div id="shoutbox_data" style="padding:2px;height: {$mybb->settings[\'mysb_height\']}px; overflow: auto;">{$lang->mysb_loading}</div></td>
-</tr>
-</tbody>
-</table>
+	<div id="shoutbox_e">
+		<div id="shout-controls-row" class="tcat">
+			<textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
+			<button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
+			<div id="shout-reverse-button"><i class="fa fa-arrow-down"></i></div>
+		</div>
+
+		<div id="shoutbox-alert" class="trow1">
+			<div id="shoutbox-alert-contents">Alert</div>
+		</div>
+
+		<div id="shoutbox_data" class="trow1" style="padding:2px; height: {$mybb->settings[\'mysb_height\']}px; overflow: auto;">{$lang->mysb_loading}</div>
+	</div>
+</div>
 
 <script type="text/javascript">
 ShoutBox.refreshInterval = {$mybb->settings[\'mysb_refresh_interval\']};

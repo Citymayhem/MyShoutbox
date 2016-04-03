@@ -19,6 +19,7 @@ var ShoutBox = {
 	MaxEntries: 5,
 	DataStore: new Array(),
 	shouting: false,
+	newestShoutAtBottom: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
 
 	// Escape HTML. Source: http://stackoverflow.com/a/6020820
