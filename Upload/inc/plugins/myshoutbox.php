@@ -964,10 +964,11 @@ function myshoutbox_show_shouts($last_id = 0)
 	
 	$last_id = (int)$last_id; // not needed here since when we call the function it converts $last_id to int already
 
-	$query = $db->write_query("SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
+	$order = $mybb->user['mysb_order_desc'] ? "DESC" : "ASC";
+	$query = $db->write_query("SELECT * FROM (SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
 							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
-						WHERE s.id>{$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . "%') 
-						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}");
+						WHERE s.id > {$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . " %') 
+						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}) shouts ORDER BY shouts.id {$order}");
 	
 	// fetch results 
 	$messages = "";
