@@ -19,7 +19,7 @@ var ShoutBox = {
 	MaxEntries: 5,
 	DataStore: new Array(),
 	shouting: false,
-	newestShoutAtBottom: false,
+	orderShoutboxDesc: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
 
 	// Escape HTML. Source: http://stackoverflow.com/a/6020820
@@ -363,5 +363,33 @@ var ShoutBox = {
 		messageBox
 			.css('height', 'auto')
 			.css('height', messageBox[0].scrollHeight + offset);
+	},
+	
+	toggleShoutboxOrder: function() {
+		$.get("xmlhttp.php?action=toggle_shoutbox_order")
+		.done(function(newStatus) {
+			// TODO: Redraw shoutbox
+		})
+		.fail(function(){
+			// TODO: Remove debug message. Proper error plz.
+			console.log("Error changing shout order");
+		});
+	},
+	
+	/*
+		Auto-scroll to bottom of shoutbox
+		dotnetCarpenter
+		http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up
+	*/
+	isScrolledToBottom: function() {
+		var chatBoxBodyElement = $("#shoutbox_data")[0];
+        var chromeScrollInaccuracy = 1;
+        return chatBoxBodyElement.scrollHeight - chatBoxBodyElement.clientHeight
+                <= chatBoxBodyElement.scrollTop + chromeScrollInaccuracy;
+	},
+	
+	scrollToBottomOfMessages: function() {
+		var chatBoxBodyElement = $("#shoutbox_data")[0];
+		chatBoxBodyElement.scrollTop = chatBoxBodyElement.scrollHeight - chatBoxBodyElement.clientHeight;
 	}
 };

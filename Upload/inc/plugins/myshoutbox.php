@@ -315,6 +315,7 @@ function myshoutbox_install()
 	
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_banned` smallint(1) NOT NULL DEFAULT 0;");
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_banned_reason` varchar(255) NOT NULL DEFAULT '';");
+	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_order_desc` TINYINT(1) NOT NULL DEFAULT 1;");
 	
 	// rebuild settings...
 	rebuild_settings();
@@ -472,6 +473,7 @@ li.shoutbox_color {
 ShoutBox.refreshInterval = {$mybb->settings[\'mysb_refresh_interval\']};
 ShoutBox.MaxEntries = {$mybb->settings[\'mysb_shouts_main\']};
 ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
+ShoutBox.orderShoutboxDesc = {$mybb->user[\'mysb_order_desc\']};
 {$extra_js}
 $(document).ready(function(){
 	
@@ -683,6 +685,7 @@ function myshoutbox_uninstall()
 	
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_banned`;");
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_banned_reason`;");
+	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_order_desc`;");
 }
 
 function myshoutbox_is_installed()
@@ -738,6 +741,10 @@ function myshoutbox_load()
 		
 		case 'report_shout':
 			myshoutbox_report_shout($mybb->input['reason'], intval($mybb->input['sid']));
+		break;
+		
+		case 'toggle_shoutbox_order':
+			myshoutbox_toggle_shoutbox_order();
 		break;
 	}
 }
@@ -1765,5 +1772,29 @@ function myshoutbox_pm_button($uid){
 	global $lang, $mybb;
 	if($mybb->user['uid'] != $uid)return "<a class=\"shoutbox-icon\" href=\"javascript:void(0)\" onClick=\"ShoutBox.pvtAdd(".$uid.");\" title=\"{$lang->mysb_pm}\"><i class=\"fa fa-envelope-o\"></i></a>";
 	return "";
+}
+
+function myshoutbox_toggle_shoutbox_order(){
+	global $mybb, $db;
+	$uid = $mybb->user['uid'];
+	
+	if ($uid <= 0){
+		return false;
+	}
+	
+	$orderShoutboxDesc = $mybb->user['mysb_order_desc'] == 1;
+	
+	if($orderShoutboxDesc){
+		$orderShoutboxDesc = false;
+	}
+	else {
+		$orderShoutboxDesc = true;
+	}
+	
+	$orderValue = $orderShoutboxDesc ? 1 : 0;
+	
+	$db->update_query('users', array('mysb_order_desc' => $orderValue), 'uid='.$uid);
+	
+	echo $orderValue;
 }
 ?>
