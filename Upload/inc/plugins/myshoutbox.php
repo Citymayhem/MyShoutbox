@@ -473,7 +473,7 @@ li.shoutbox_color {
 ShoutBox.refreshInterval = {$mybb->settings[\'mysb_refresh_interval\']};
 ShoutBox.MaxEntries = {$mybb->settings[\'mysb_shouts_main\']};
 ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
-ShoutBox.orderShoutboxDesc = {$mybb->user[\'mysb_order_desc\']};
+ShoutBox.orderShoutboxDesc = {$mybb->user[\'mysb_order_desc\']} === 1;
 {$extra_js}
 $(document).ready(function(){
 	
@@ -490,6 +490,10 @@ $(document).ready(function(){
 	
 	$("#shouting-status").click(function(){
 		ShoutBox.postShout();
+	});
+	
+	$("#shout-reverse-button").click(function(){
+		ShoutBox.toggleShoutboxOrder();
 	});
 	
 	ShoutBox.showShouts();
@@ -959,20 +963,23 @@ function myshoutbox_show_shouts($last_id = 0)
 	$perms = myshoutbox_can_view();
 	if (!$perms || $perms === 2) return;
 	
+	if(!isInteger($last_id)) return;
+	
 	require_once MYBB_ROOT.'inc/class_parser.php';
 	$parser = new postParser;
-	
-	$last_id = (int)$last_id; // not needed here since when we call the function it converts $last_id to int already
 
-	$order = $mybb->user['mysb_order_desc'] ? "DESC" : "ASC";
-	$query = $db->write_query("SELECT * FROM (SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
+	$last_id = (int) $last_id;
+	
+	$query = $db->write_query("SELECT s.*, u.username, u.usergroup, u.displaygroup FROM ".TABLE_PREFIX."mysb_shouts s 
 							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
 						WHERE s.id > {$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . " %') 
-						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}) shouts ORDER BY shouts.id {$order}");
+						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}");
 	
 	// fetch results 
+	
 	$messages = "";
 	$entries = 0;
+	$maxId = $last_id;
 	$usernames_cache = array();
 	while ($row = $db->fetch_array($query))
 	{
@@ -1017,24 +1024,20 @@ function myshoutbox_show_shouts($last_id = 0)
 				}
 				
 				$message = "<span class=\"shoutbox_pm\">{$lang->mysb_pvt_to} ".htmlspecialchars_uni($userName)."</span>: ".$message;
-				$entries++;
-		
-				if ($entries == 1) {
-					$maxid = $row['id'];
-				}
 			}
 			else continue;
 		}
 		else {
 			// Generate HIDDEN message for hidden shouts
 			$hidden = myshoutbox_hide_msg($row['id'],$row['hidden']);
-			
-			$entries++;
-		
-			if ($entries == 1) {
-				$maxid = $row['id'];
-			}
 		}
+		
+		$entries++;
+		
+		if($row["id"] > $maxId){
+			$maxId = $row["id"];
+		}
+		
 		// Format their username & make it link to their profile
 		$row['username'] = format_name($row['username'], $row['usergroup'], $row['displaygroup']);
 		$username = build_profile_link($row['username'], $row['uid']);
@@ -1058,11 +1061,7 @@ function myshoutbox_show_shouts($last_id = 0)
 		$messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span><br />\r\n";
 	}
 	
-	if (!$maxid) {
-		$maxid = $last_id;
-	}
-	
-	echo "{$maxid}^--^{$entries}^--^{$messages}^--^{$chat_messages}";
+	echo "{$maxId}^--^{$entries}^--^{$messages}^--^{$chat_messages}";
 	exit;
 }
 
@@ -1797,5 +1796,9 @@ function myshoutbox_toggle_shoutbox_order(){
 	$db->update_query('users', array('mysb_order_desc' => $orderValue), 'uid='.$uid);
 	
 	echo $orderValue;
+}
+
+function isInteger($input){
+    return(ctype_digit(strval($input)));
 }
 ?>

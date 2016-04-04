@@ -15,7 +15,7 @@ var ShoutBox = {
 	refreshInterval: 60,
 	lastID: 0,
 	totalEntries: 0,
-	firstRun: 1,
+	firstRun: true,
 	MaxEntries: 5,
 	DataStore: new Array(),
 	shouting: false,
@@ -60,18 +60,25 @@ var ShoutBox = {
 		var theHTML = "";
 		var curData = "";
 		var data = responseData.split('^--^');
-		var theID = parseInt(data[0]);
+		var lastID = parseInt(data[0]);
 		var theEntries = parseInt(data[1]);
+		var lastEntryIsEmpty = false;
 
-		if (theID <= ShoutBox.lastID) {
+		if (lastID <= ShoutBox.lastID) {
 			return;
 		}
 
 		// add to data store now...
 		curData = data[2].split("\r\n");
+		
+		
+		if(curData[curData.length - 1] === ""){
+			lastEntryIsEmpty = true;
+		}
 
+		var numberOfShouts = lastEntryIsEmpty ? curData.length - 1 : curData.length;
 		// only 1 message?
-		if (curData.length == 1) 
+		if (numberOfShouts == 1) 
 		{
 			length = ShoutBox.DataStore.length;
 			ShoutBox.DataStore[ length ] = curData[0];
@@ -81,7 +88,7 @@ var ShoutBox = {
 			// hush, lots of em
 			var collectData = "";
 			var length = 0;
-			for (var i = curData.length; i >= 0; i--) 
+			for (var i = numberOfShouts; i >= 0; i--) 
 			{
 				if (curData[i] != "" && curData[i] != undefined) {
 					length = ShoutBox.DataStore.length;
@@ -90,28 +97,23 @@ var ShoutBox = {
 			}
 		}
 
-		ShoutBox.lastID = theID;
+		ShoutBox.lastID = lastID;
 		ShoutBox.totalEntries += theEntries;
 
-		if (ShoutBox.firstRun == 1) {
-			theHTML = data[2];
-			ShoutBox.firstRun = 0;
-		} else {
-
-			// the data is more than the limit? hard luck here then... just get it from datastore
-			if ((theEntries + ShoutBox.totalEntries) > ShoutBox.MaxEntries) {
-				for (var j=0, i = ShoutBox.DataStore.length-1; j < ShoutBox.MaxEntries; i--, j++) {
-					theHTML += ShoutBox.DataStore[i];
-				}
-
-				ShoutBox.totalEntries = ShoutBox.MaxEntries;
-
-			} else {
-				theHTML = data[2] + $("#shoutbox_data").html();
-			}
-
+		ShoutBox.renderMessages();
+		ShoutBox.renderReverseOrderButton();
+		
+		var shouldScrollToBottom = ShoutBox.firstRun && !ShoutBox.orderShoutboxDesc;
+		if(shouldScrollToBottom){
+			ShoutBox.scrollToBottomOfMessages();
 		}
-		$("#shoutbox_data").html(theHTML);
+		else if(ShoutBox.firstRun) {
+			ShoutBox.scrollToTopOfMessages();
+		}
+		
+		if (ShoutBox.firstRun) {
+			ShoutBox.firstRun = false;
+		}
 
 		// clean up DataStore
 		ShoutBox.cleanDataStore();
@@ -167,7 +169,7 @@ var ShoutBox = {
 		$("#shouting-status").html(ShoutBox.lang[1]);
 		$("#shout_data").removeAttr("disabled");
 		$("#shouting-status").removeAttr("disabled");
-		ShoutBox.resizeToFitContents();
+		ShoutBox.resizeMessageBoxToFitContents();
 		ShoutBox.shouting = false;
 		ShoutBox.showShouts();
 	},
@@ -351,7 +353,7 @@ var ShoutBox = {
 		setTimeout(function(){$("#shoutbox-alert").css("display","none");}, 5000);
 	},
 	
-	resizeToFitContents: function(){
+	resizeMessageBoxToFitContents: function(){
 		/*
 		Auto-resize height solution by:
 			http://stephanwagner.me/auto-resizing-textarea
@@ -368,7 +370,9 @@ var ShoutBox = {
 	toggleShoutboxOrder: function() {
 		$.get("xmlhttp.php?action=toggle_shoutbox_order")
 		.done(function(newStatus) {
-			// TODO: Redraw shoutbox
+			ShoutBox.orderShoutboxDesc = newStatus == 1;
+			ShoutBox.renderMessages();
+			ShoutBox.renderReverseOrderButton();
 		})
 		.fail(function(){
 			// TODO: Remove debug message. Proper error plz.
@@ -391,5 +395,41 @@ var ShoutBox = {
 	scrollToBottomOfMessages: function() {
 		var chatBoxBodyElement = $("#shoutbox_data")[0];
 		chatBoxBodyElement.scrollTop = chatBoxBodyElement.scrollHeight - chatBoxBodyElement.clientHeight;
+	},
+	
+	scrollToTopOfMessages: function() {
+		var chatBoxBodyElement = $("#shoutbox_data")[0];
+		chatBoxBodyElement.scrollTop = 1;
+	},
+	
+	renderMessages: function() {
+		var output = "";
+		
+		for (var i = 0; i < ShoutBox.DataStore.length; i++) {
+			if(ShoutBox.orderShoutboxDesc){
+				output = ShoutBox.DataStore[i] + output;
+			}
+			else {
+				output = output + ShoutBox.DataStore[i];
+			}
+		}
+		
+		$("#shoutbox_data").html(output);
+		
+		if(ShoutBox.orderShoutboxDesc){
+			ShoutBox.scrollToTopOfMessages();
+		}
+		else {
+			ShoutBox.scrollToBottomOfMessages();
+		}
+	},
+	
+	renderReverseOrderButton: function(){
+		if(ShoutBox.orderShoutboxDesc){
+			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-down\"></i>");
+		}
+		else {
+			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-up\"></i>");
+		}
 	}
 };
