@@ -114,9 +114,6 @@ var ShoutBox = {
 		if (ShoutBox.firstRun) {
 			ShoutBox.firstRun = false;
 		}
-
-		// clean up DataStore
-		ShoutBox.cleanDataStore();
 	},
 	
 	pvtAdd: function(uid) {
@@ -333,14 +330,6 @@ var ShoutBox = {
 			$("#shout-recover-"+id).css("display","none");
 		}
 
-	},
-
-	cleanDataStore: function() {
-		if (ShoutBox.DataStore.length > ShoutBox.MaxEntries) {
-			for (var i = (ShoutBox.DataStore.length - ShoutBox.MaxEntries); i > 0; i--) {
-				ShoutBox.DataStore[i] = "";
-			}
-		}
 	},
 
 	disableShout: function() {
