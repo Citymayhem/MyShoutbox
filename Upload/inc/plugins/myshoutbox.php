@@ -327,7 +327,7 @@ function myshoutbox_activate()
 	
 	// load templates
 	$mysb_shoutbox_tpl = '
-<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1401"></script>
 <style type="text/css">
 #shoutbox-alert{
 	display:none;
@@ -473,12 +473,13 @@ li.shoutbox_color {
 ShoutBox.refreshInterval = {$mybb->settings[\'mysb_refresh_interval\']};
 ShoutBox.MaxEntries = {$mybb->settings[\'mysb_shouts_main\']};
 ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
+ShoutBox.newLang = { "mysb_reverse_shout_order_to_asc":  "{$lang->mysb_reverse_shout_order_to_asc}", "mysb_reverse_shout_order_to_desc":  "{$lang->mysb_reverse_shout_order_to_desc}" };
 ShoutBox.orderShoutboxDesc = {$mybb->user[\'mysb_order_desc\']} === 1;
 {$extra_js}
 $(document).ready(function(){
 	
 	$("#shout_data").on("keyup input", function() { 
-		ShoutBox.resizeToFitContents(); 
+		ShoutBox.resizeMessageBoxToFitContents(); 
 	});
 	
 	$("#shout_data").keypress(function(event) {

@@ -62,3 +62,5 @@ $l['mysb_options'] = 'Options';
 $l['mysb_pvt_to'] = 'Private Shout to';
 $l['mysb_pm'] = 'Private Message';
 $l['mysb_placeholder'] = 'Enter a message...';
+$l['mysb_reverse_shout_order_to_asc'] = 'Show new shouts at the bottom';
+$l['mysb_reverse_shout_order_to_desc'] = 'Show new shouts at the top';

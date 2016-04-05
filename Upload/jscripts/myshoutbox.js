@@ -21,6 +21,16 @@ var ShoutBox = {
 	shouting: false,
 	orderShoutboxDesc: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
+	newLang: {},
+	
+	getLanguageValue: function(key){
+		var languageValue = ShoutBox.newLang[key];
+		if(languageValue === undefined){
+			return "";
+		}
+		
+		return languageValue;
+	},
 
 	// Escape HTML. Source: http://stackoverflow.com/a/6020820
 	// Escape a string for HTML interpolation.
@@ -416,9 +426,11 @@ var ShoutBox = {
 	renderReverseOrderButton: function(){
 		if(ShoutBox.orderShoutboxDesc){
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-down\"></i>");
+			$("#shout-reverse-button").attr("title", ShoutBox.getLanguageValue("mysb_reverse_shout_order_to_asc"));
 		}
 		else {
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-up\"></i>");
+			$("#shout-reverse-button").attr("title", ShoutBox.getLanguageValue("mysb_reverse_shout_order_to_desc"));
 		}
 	}
 };
