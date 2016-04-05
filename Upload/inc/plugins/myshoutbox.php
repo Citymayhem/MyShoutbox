@@ -439,10 +439,17 @@ li.shoutbox_color {
 	text-decoration: none;
 }
 
-#shoutbox_data {
+.shoutbox_data_wrapper {
 	border-bottom-right-radius: 6px;
 	border-bottom-left-radius: 6px;
 	border: 0;
+	padding:2px;
+	height: {$mybb->settings[\'mysb_height\']}px;
+	overflow: auto;
+}
+
+#shoutbox_data {
+	margin-bottom: 5px;
 }
 </style>
 
@@ -465,7 +472,9 @@ li.shoutbox_color {
 			<div id="shoutbox-alert-contents">Alert</div>
 		</div>
 
-		<div id="shoutbox_data" class="trow1" style="padding:2px; height: {$mybb->settings[\'mysb_height\']}px; overflow: auto;">{$lang->mysb_loading}</div>
+		<div class="trow1 shoutbox_data_wrapper">
+			<div id="shoutbox_data" >{$lang->mysb_loading}</div>
+		</div>
 	</div>
 </div>
 
@@ -1059,7 +1068,7 @@ function myshoutbox_show_shouts($last_id = 0)
 		$buttons = myshoutbox_generate_buttons($row['id'], $row['uid'], $tryShowPMButton, !$isPrivateMessage, $isHidden);
 		
 		// Format our output
-		$messages .= "<span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span><br />\r\n";
+		$messages .= "<div style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</div>\r\n";
 	}
 	
 	echo "{$maxId}^--^{$entries}^--^{$messages}^--^{$chat_messages}";

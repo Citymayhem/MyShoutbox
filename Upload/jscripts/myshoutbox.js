@@ -385,19 +385,19 @@ var ShoutBox = {
 		http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up
 	*/
 	isScrolledToBottom: function() {
-		var chatBoxBodyElement = $("#shoutbox_data")[0];
+		var chatBoxBodyElement = $(".shoutbox_data_wrapper")[0];
         var chromeScrollInaccuracy = 1;
         return chatBoxBodyElement.scrollHeight - chatBoxBodyElement.clientHeight
                 <= chatBoxBodyElement.scrollTop + chromeScrollInaccuracy;
 	},
 	
 	scrollToBottomOfMessages: function() {
-		var chatBoxBodyElement = $("#shoutbox_data")[0];
+		var chatBoxBodyElement = $(".shoutbox_data_wrapper")[0];
 		chatBoxBodyElement.scrollTop = chatBoxBodyElement.scrollHeight - chatBoxBodyElement.clientHeight;
 	},
 	
 	scrollToTopOfMessages: function() {
-		var chatBoxBodyElement = $("#shoutbox_data")[0];
+		var chatBoxBodyElement = $(".shoutbox_data_wrapper")[0];
 		chatBoxBodyElement.scrollTop = 1;
 	},
 	
