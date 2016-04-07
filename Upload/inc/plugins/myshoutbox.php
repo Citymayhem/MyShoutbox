@@ -376,13 +376,23 @@ function myshoutbox_activate()
 	opacity: .65;
 }
 
-#shout-reverse-button {
+.shoutbox-reverse-button-wrapper{
 	position: absolute;
 	height: 100%;
-	top: 3px;
-	right: 3px;
+	top: 0;
+	left: 5px;
 	cursor: pointer;
 	font-size: 20px;
+}
+
+#shout-reverse-button {
+	display: table;
+	height: 100%;
+}
+
+#shout-reverse-button i {
+	display: table-cell;
+	vertical-align: middle;
 }
 
 li.shoutbox_normal {
@@ -439,17 +449,10 @@ li.shoutbox_color {
 	text-decoration: none;
 }
 
-.shoutbox_data_wrapper {
+#shoutbox_data {
 	border-bottom-right-radius: 6px;
 	border-bottom-left-radius: 6px;
 	border: 0;
-	padding:2px;
-	height: {$mybb->settings[\'mysb_height\']}px;
-	overflow: auto;
-}
-
-#shoutbox_data {
-	margin-bottom: 5px;
 }
 </style>
 
@@ -465,7 +468,7 @@ li.shoutbox_color {
 		<div id="shout-controls-row" class="tcat">
 			<textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
 			<button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
-			<div id="shout-reverse-button"><i class="fa fa-arrow-down"></i></div>
+			<div class="shoutbox-reverse-button-wrapper"><div id="shout-reverse-button"><i class="fa fa-arrow-down"></i></div></div>
 		</div>
 
 		<div id="shoutbox-alert" class="trow1">
