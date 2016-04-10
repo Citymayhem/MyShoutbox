@@ -408,6 +408,14 @@ function myshoutbox_activate()
 	overflow: auto;
 }
 
+#shoutbox_data>div:first-child{
+	margin-top: 4px;
+}
+
+#shoutbox_data>div:last-child{
+	margin-bottom: 4px;
+}
+
 .shoutbox-reverse-button-wrapper{
 	position: absolute;
 	height: 100%;
