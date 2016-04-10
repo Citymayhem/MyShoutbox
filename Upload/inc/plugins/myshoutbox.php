@@ -375,6 +375,38 @@ function myshoutbox_activate()
 #shouting-status[disabled] {
 	opacity: .65;
 }
+	
+#shoutbox_wrapper {
+	position: relative;
+}
+	
+.shoutbox_wrapper_reverse {
+	padding-top: {$mybb->settings[\'mysb_height\']}px;
+}
+	
+#shoutbox_data_wrapper {
+	width: 100%;
+}
+
+.shoutbox_data_wrapper_reverse {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.shoutbox_data_wrapper_reverse #shoutbox_data {
+	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+}
+
+#shoutbox_data {
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	border: 0;
+	padding: 0;
+	height: {$mybb->settings[\'mysb_height\']}px;
+	overflow: auto;
+}
 
 .shoutbox-reverse-button-wrapper{
 	position: absolute;
@@ -448,12 +480,6 @@ li.shoutbox_color {
 .shoutbox-icon: hover{
 	text-decoration: none;
 }
-
-#shoutbox_data {
-	border-bottom-right-radius: 6px;
-	border-bottom-left-radius: 6px;
-	border: 0;
-}
 </style>
 
 <div class="tborder">
@@ -464,19 +490,17 @@ li.shoutbox_color {
 		</div>
 	</div>
 
-	<div id="shoutbox_e">
+	<div id="shoutbox-alert" class="trow1"><div id="shoutbox-alert-contents">Alert</div></div>
+
+	<div id="shoutbox_wrapper">
 		<div id="shout-controls-row" class="tcat">
 			<textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
 			<button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
 			<div class="shoutbox-reverse-button-wrapper"><div id="shout-reverse-button"><i class="fa fa-arrow-down"></i></div></div>
 		</div>
 
-		<div id="shoutbox-alert" class="trow1">
-			<div id="shoutbox-alert-contents">Alert</div>
-		</div>
-
-		<div class="trow1 shoutbox_data_wrapper">
-			<div id="shoutbox_data" >{$lang->mysb_loading}</div>
+		<div id="shoutbox_data_wrapper">
+			<div id="shoutbox_data" class="trow1">{$lang->mysb_loading}</div>
 		</div>
 	</div>
 </div>
@@ -1071,7 +1095,7 @@ function myshoutbox_show_shouts($last_id = 0)
 		$buttons = myshoutbox_generate_buttons($row['id'], $row['uid'], $tryShowPMButton, !$isPrivateMessage, $isHidden);
 		
 		// Format our output
-		$messages .= "<div style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</div>\r\n";
+		$messages .= "<div style=\"font-size: {$mybb->settings['mysb_text_size']}px\">{$hidden}{$buttons}{$username} - {$date_time} -- {$message}</div>\r\n";
 	}
 	
 	echo "{$maxId}^--^{$entries}^--^{$messages}^--^{$chat_messages}";

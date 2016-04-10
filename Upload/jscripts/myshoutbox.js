@@ -110,10 +110,13 @@ var ShoutBox = {
 		ShoutBox.lastID = lastID;
 		ShoutBox.totalEntries += theEntries;
 
-		ShoutBox.renderMessages();
-		ShoutBox.renderReverseOrderButton();
-		
 		var shouldScrollToBottom = ShoutBox.firstRun && !ShoutBox.orderShoutboxDesc;
+		if (ShoutBox.firstRun) {
+			ShoutBox.renderStructure();
+		}
+		
+		ShoutBox.renderShoutbox();
+		
 		if(shouldScrollToBottom){
 			ShoutBox.scrollToBottomOfMessages();
 		}
@@ -121,9 +124,7 @@ var ShoutBox = {
 			ShoutBox.scrollToTopOfMessages();
 		}
 		
-		if (ShoutBox.firstRun) {
-			ShoutBox.firstRun = false;
-		}
+		ShoutBox.firstRun = false;
 	},
 	
 	pvtAdd: function(uid) {
@@ -370,8 +371,8 @@ var ShoutBox = {
 		$.get("xmlhttp.php?action=toggle_shoutbox_order")
 		.done(function(newStatus) {
 			ShoutBox.orderShoutboxDesc = newStatus == 1;
-			ShoutBox.renderMessages();
-			ShoutBox.renderReverseOrderButton();
+			ShoutBox.renderStructure();
+			ShoutBox.renderShoutbox();
 		})
 		.fail(function(){
 			// TODO: Remove debug message. Proper error plz.
@@ -399,6 +400,22 @@ var ShoutBox = {
 	scrollToTopOfMessages: function() {
 		var chatBoxBodyElement = $("#shoutbox_data")[0];
 		chatBoxBodyElement.scrollTop = 1;
+	},
+	
+	renderShoutbox: function() {
+		ShoutBox.renderMessages();
+		ShoutBox.renderReverseOrderButton();
+	},
+	
+	renderStructure: function()  {
+		if(ShoutBox.orderShoutboxDesc){
+			$("#shoutbox_wrapper").removeClass("shoutbox_wrapper_reverse");
+			$("#shoutbox_data_wrapper").removeClass("shoutbox_data_wrapper_reverse");
+		}
+		else {
+			$("#shoutbox_wrapper").addClass("shoutbox_wrapper_reverse");
+			$("#shoutbox_data_wrapper").addClass("shoutbox_data_wrapper_reverse");
+		}
 	},
 	
 	renderMessages: function() {
