@@ -406,14 +406,7 @@ function myshoutbox_activate()
 	padding: 0;
 	height: {$mybb->settings[\'mysb_height\']}px;
 	overflow: auto;
-}
-
-#shoutbox_data>div:first-child{
-	margin-top: 4px;
-}
-
-#shoutbox_data>div:last-child{
-	margin-bottom: 4px;
+	max-height: 999999px;
 }
 
 .shoutbox-reverse-button-wrapper{
@@ -487,6 +480,11 @@ li.shoutbox_color {
 
 .shoutbox-icon: hover{
 	text-decoration: none;
+}
+
+.shout {
+	font-size: {$mybb->settings[\'mysb_text_size\']}px;
+	max-height: 999999px;
 }
 </style>
 
@@ -1103,7 +1101,7 @@ function myshoutbox_show_shouts($last_id = 0)
 		$buttons = myshoutbox_generate_buttons($row['id'], $row['uid'], $tryShowPMButton, !$isPrivateMessage, $isHidden);
 		
 		// Format our output
-		$messages .= "<div style=\"font-size: {$mybb->settings['mysb_text_size']}px\">{$hidden}{$buttons}{$username} - {$date_time} -- {$message}</div>\r\n";
+		$messages .= "<div class=\"shout\">{$hidden}{$buttons}{$username} - {$date_time} -- {$message}</div>\r\n";
 	}
 	
 	echo "{$maxId}^--^{$entries}^--^{$messages}^--^{$chat_messages}";
