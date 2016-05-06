@@ -574,6 +574,26 @@ $(document).ready(function(){
 	color:#005500;
 	font-weight:bold;
 }
+
+.shoutbox-icons {
+	display: inline-block;
+	padding-right: 5px;
+	margin-right: 5px;
+	border-right: 1px solid #ccc;
+}
+
+.shoutbox-icon {
+	margin-left: 10px;
+}
+
+.shoutbox-icon: hover{
+	text-decoration: none;
+}
+
+.shout {
+	font-size: {$mybb->settings[\'mysb_text_size\']}px;
+	max-height: 999999px;
+}
 </style>
 {$headerinclude}
 </head>
@@ -923,7 +943,7 @@ function myshoutbox_show_full()
 		$showPMButton = false;
 		$buttons = myshoutbox_generate_buttons($row['id'], $row['uid'], $showPMButton, !$isPrivateMessage, $isHidden);
 		
-		$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td class='{$class}'><span style=\"font-size: {$mybb->settings['mysb_text_size']}px\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span></td></tr>";
+		$mysb_shoutbox_data .= "<tr id='shout-{$row[id]}'><td class='{$class}'><span class=\"shout\">&raquo; {$hidden}{$buttons}{$username} - {$date_time} -- {$message}</span></td></tr>";
 	}
 	
 	
@@ -1751,7 +1771,7 @@ function myshoutbox_hide_msg($sid, $hidden){
 	// If the shout is hidden, it will display the HIDDEN message.
 	if(myshoutbox_can_delete()){
 		// Adds the red "HIDDEN" message to the front of the shout
-		return "<span style=\"".($hidden == "yes"?"display:inline;":"display:none;")." color: #FF0000\"; id=\"shout-hidemsg-{$sid}\"><strong>{$lang->mysb_deleted_info}</strong> &raquo; </span>";
+		return "<span style=\"".($hidden == "yes"?"display:inline;":"display:none;")." color: #FF0000;\" id=\"shout-hidemsg-{$sid}\"><strong>{$lang->mysb_deleted_info}</strong> &raquo; </span>";
 	}
 	return "";
 }
