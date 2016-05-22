@@ -295,7 +295,7 @@ function myshoutbox_install()
 	  `shout_ip` varchar(30) NOT NULL,
 	  `hidden` varchar(10) NOT NULL,
 	  PRIMARY KEY  (`id`)
-		) ENGINE=MyISAM");
+		) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
 	
 	// create reports table
 	$db->write_query("CREATE TABLE `".TABLE_PREFIX."mysb_reports` (
@@ -309,7 +309,7 @@ function myshoutbox_install()
 	  `author_uid` int(10) NOT NULL DEFAULT 0,
 	  `author_username` varchar(30) NOT NULL DEFAULT '',
 	  PRIMARY KEY  (`rid`), KEY(`date`)
-		) ENGINE=MyISAM");
+		) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
 		
 	$db->write_query("INSERT INTO ".TABLE_PREFIX."mysb_shouts VALUES (NULL, 1, 'Test Shout! Without any shout, shoutbox will display Loading... forever.. you need at least one shout, so here it is.', ".time().", '127.0.0.1', 'no')");
 	
