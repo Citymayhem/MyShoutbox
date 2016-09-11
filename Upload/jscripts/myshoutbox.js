@@ -421,7 +421,7 @@ var ShoutBox = {
 	
 	renderShout: function(shout){
 		return ShoutBox.shoutMessageFormat
-						.replace(new RegExp("{{datetime}}", 'g'), new Date(shout.dateTime * 1000).toString())
+						.replace(new RegExp("{{datetime}}", 'g'), moment.unix(shout.dateTime).format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
 						.replace(new RegExp("{{uid}}", 'g'), shout.userId)
@@ -443,26 +443,26 @@ var ShoutBox = {
 	shoutMessageFormat: "<!-- todo: Indicate if hidden/pm\
 			User Ip\
  -->\
-<div class=\"shout\" style=\"margin-bottom: 5px;\">\
-	<div class=\"shout-author\" style=\"display: inline-block; margin-left: 10px;vertical-align: bottom;\">\
+<div class=\"shout\">\
+	<div class=\"shout-author\">\
 		<a title=\"{{datetime}}\" href=\"http://citymayhem.net/user-2642.html\">\
-			<img src=\"{{avatarUrl}}\" class=\"shout-author-avatar\" style=\"width:25px; height:25px; border-radius: 2px;\">\
+			<img class=\"shout-author-avatar\" src=\"{{avatarUrl}}\" \>\
 		</a>\
 	</div>\
-	<div class=\"shout-body\" style=\"display:inline-block;margin-left: 10px;\">\
+	<div class=\"shout-content\">\
 		<div class=\"shout-content-header\">\
-			<div class=\"shout-author-name\" style=\"display:inline-block;\">\
+			<div class=\"shout-author-name\">\
 				{{formattedName}}\
 			</div>\
 			<span>{{datetime}}</span>\
-			<div class=\"shout-links\" style=\"display:inline-block; margin-left: 5px;\">\
+			<div class=\"shout-links\">\
 				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.pvtAdd({{uid}});\" title=\"Private Message\"><i class=\"fa fa-envelope-o\"></i></a>\
 				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.promptReason({{shoutId}});\" title=\"Report\"><i class=\"fa fa-flag\"></i></a>\
 				<!-- TODO: Delete, hide -->\
 			</div>\
 		</div>\
 		<div class=\"shout-body\">\
-			<div style=\"border-radius: 3px; padding: 5px; background: #F0F0F0;\">{{message}}</div>\
+			<div class=\"shout-body-text\">{{message}}</div>\
 		</div>\
 	</div>\
 </div>"

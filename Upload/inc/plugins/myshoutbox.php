@@ -330,7 +330,7 @@ function myshoutbox_activate()
 	// load templates
 	$mysb_shoutbox_tpl = '
 <script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
-<script type="text/javascript" src="jscripts/moment.js"></script>
+<script type="text/javascript" src="jscripts/moment.min.js"></script>
 <style type="text/css">
 #shoutbox-alert{
 	display:none;
@@ -486,8 +486,43 @@ li.shoutbox_color {
 }
 
 .shout {
+	display: table;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 5px;
 	font-size: {$mybb->settings[\'mysb_text_size\']}px;
-	max-height: 999999px;
+}
+
+.shout .shout-author {
+	display: table-cell;
+	vertical-align: bottom;
+}
+
+.shout .shout-author-avatar {
+	width:25px;
+	height:25px;
+	border-radius: 2px;
+}
+
+.shout .shout-content {
+	display:table-cell;
+	padding-left: 10px;
+}
+
+.shout .shout-author-name{
+	display: inline-block;
+}
+
+.shout .shout-links{
+	display:inline-block;
+	margin-left: 5px;
+}
+
+.shout .shout-body-text{
+	border-radius: 3px;
+	padding: 5px;
+	background: #F0F0F0;
+	display: inline-block;
 }
 </style>
 
@@ -551,7 +586,7 @@ $(document).ready(function(){
 	$mysb_boxfull_tpl = '<html>
 <head>
 <script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
-<script type="text/javascript" src="jscripts/moment.js"></script>
+<script type="text/javascript" src="jscripts/moment.min.js"></script>
 <title>Full Shoutbox</title>
 <style>
 .shoutbox-icons {
@@ -595,8 +630,43 @@ $(document).ready(function(){
 }
 
 .shout {
+	display: table;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 5px;
 	font-size: {$mybb->settings[\'mysb_text_size\']}px;
-	max-height: 999999px;
+}
+
+.shout .shout-author {
+	display: table-cell;
+	vertical-align: bottom;
+}
+
+.shout .shout-author-avatar {
+	width:25px;
+	height:25px;
+	border-radius: 2px;
+}
+
+.shout .shout-content {
+	display:table-cell;
+	padding-left: 10px;
+}
+
+.shout .shout-author-name{
+	display: inline-block;
+}
+
+.shout .shout-links{
+	display:inline-block;
+	margin-left: 5px;
+}
+
+.shout .shout-body-text{
+	border-radius: 3px;
+	padding: 5px;
+	background: #F0F0F0;
+	display: inline-block;
 }
 </style>
 {$headerinclude}
@@ -636,7 +706,7 @@ ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang
 <title>{$lang->mysb_shoutbox}</title>
 {$headerinclude}
 <script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
-<script type="text/javascript" src="jscripts/moment.js"></script>
+<script type="text/javascript" src="jscripts/moment.min.js"></script>
 </head>
 <body>
 
@@ -688,6 +758,46 @@ li.shoutbox_color {
 .shoutbox_pm a{
 	color:#005500;
 	font-weight:bold;
+}
+
+.shout {
+	display: table;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 5px;
+	font-size: {$mybb->settings[\'mysb_text_size\']}px;
+}
+
+.shout .shout-author {
+	display: table-cell;
+	vertical-align: bottom;
+}
+
+.shout .shout-author-avatar {
+	width:25px;
+	height:25px;
+	border-radius: 2px;
+}
+
+.shout .shout-content {
+	display:table-cell;
+	padding-left: 10px;
+}
+
+.shout .shout-author-name{
+	display: inline-block;
+}
+
+.shout .shout-links{
+	display:inline-block;
+	margin-left: 5px;
+}
+
+.shout .shout-body-text{
+	border-radius: 3px;
+	padding: 5px;
+	background: #F0F0F0;
+	display: inline-block;
 }
 </style>
 
