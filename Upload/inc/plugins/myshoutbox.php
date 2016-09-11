@@ -329,7 +329,8 @@ function myshoutbox_activate()
 	
 	// load templates
 	$mysb_shoutbox_tpl = '
-<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1401"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
+<script type="text/javascript" src="jscripts/moment.js"></script>
 <style type="text/css">
 #shoutbox-alert{
 	display:none;
@@ -549,7 +550,8 @@ $(document).ready(function(){
 
 	$mysb_boxfull_tpl = '<html>
 <head>
-<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
+<script type="text/javascript" src="jscripts/moment.js"></script>
 <title>Full Shoutbox</title>
 <style>
 .shoutbox-icons {
@@ -633,7 +635,8 @@ ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang
 <head>
 <title>{$lang->mysb_shoutbox}</title>
 {$headerinclude}
-<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1400"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
+<script type="text/javascript" src="jscripts/moment.js"></script>
 </head>
 <body>
 
@@ -712,7 +715,7 @@ ShoutBox.refreshInterval = {$mybb->settings[\'mysb_refresh_interval\']};
 ShoutBox.MaxEntries = {$mybb->settings[\'mysb_shouts_main\']};
 ShoutBox.lang = [\'{$lang->mysb_posting}\', \'{$lang->mysb_shoutnow}\', \'{$lang->mysb_loading}\', \'{$lang->mysb_flood_check}\', \'{$lang->mysb_no_perform}\', \'{$lang->mysb_already_sent}\', \'{$lang->mysb_deleted}\', \'{$lang->mysb_invalid}\', \'{$lang->mysb_self}\', \'{$lang->mysb_report_invalid_sid}\', \'{$lang->mysb_shout_reported}\', \'{$lang->mysb_shout_already_reported}\'];
 {$extra_js}
-Event.observe(window, \'load\', ShoutBox.showShouts); 
+Event.observe(window, \'load\', ShoutBox.getShouts); 
 </script>
 
 </body>

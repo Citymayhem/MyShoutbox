@@ -421,12 +421,12 @@ var ShoutBox = {
 	
 	renderShout: function(shout){
 		return ShoutBox.shoutMessageFormat
-						.replace("{{datetime}}", new Date(shout.dateTime * 1000).toString())
-						.replace("{{avatarUrl}}", shout.avatarUrl)
-						.replace("{{formattedName}}", shout.formattedUsername)
-						.replace("{{uid}}", shout.userId)
-						.replace("{{shoutId}}", shout.id)
-						.replace("{{message}}", shout.message);
+						.replace(new RegExp("{{datetime}}", 'g'), new Date(shout.dateTime * 1000).toString())
+						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
+						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
+						.replace(new RegExp("{{uid}}", 'g'), shout.userId)
+						.replace(new RegExp("{{shoutId}}", 'g'), shout.id)
+						.replace(new RegExp("{{message}}", 'g'), shout.message);
 	},
 	
 	renderReverseOrderButton: function(){
@@ -445,7 +445,7 @@ var ShoutBox = {
  -->\
 <div class=\"shout\" style=\"margin-bottom: 5px;\">\
 	<div class=\"shout-author\" style=\"display: inline-block; margin-left: 10px;vertical-align: bottom;\">\
-		<a href=\"http://citymayhem.net/user-2642.html\">\
+		<a title=\"{{datetime}}\" href=\"http://citymayhem.net/user-2642.html\">\
 			<img src=\"{{avatarUrl}}\" class=\"shout-author-avatar\" style=\"width:25px; height:25px; border-radius: 2px;\">\
 		</a>\
 	</div>\
