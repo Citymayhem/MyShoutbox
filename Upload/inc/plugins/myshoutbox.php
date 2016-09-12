@@ -347,7 +347,7 @@ function myshoutbox_uninstall()
 	$db->write_query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name = 'mysb_shoutbox'");
 	$db->write_query("DELETE FROM ".TABLE_PREFIX."settings WHERE name IN('mysb_shouts_main','mysb_refresh_interval','mysb_allow_mycode',
 							'mysb_allow_smilies','mysb_allow_imgcode','mysb_height','mysb_datetime','mysb_full_ppage','mysb_allow_smods',
-							'mysb_allow_html','mysb_flood_time','mysb_usergroups','mysb_additional_groups','mysb_allow_mods','mysb_display_message','mysb_allow_video')");
+							'mysb_allow_html','mysb_flood_time','mysb_usergroups','mysb_additional_groups','mysb_allow_mods','mysb_display_message','mysb_allow_video','mysb_banned_mycode','mysb_cooldown_groups', 'mysb_key', 'mysb_text_size')");
 	
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_banned`;");
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_banned_reason`;");
