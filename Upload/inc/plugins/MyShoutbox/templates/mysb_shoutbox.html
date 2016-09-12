@@ -1,4 +1,4 @@
-<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1802"></script>
 <script type="text/javascript" src="jscripts/moment.min.js"></script>
 <style type="text/css">
 #shoutbox-alert{
@@ -187,6 +187,14 @@ li.shoutbox_color {
 	margin-left: 5px;
 }
 
+.shout .shout-pm-message{
+	font-weight:bold
+}
+
+.shout .shout-body>div:not(:first-child) {
+	margin-top: 5px;
+}
+
 .shout .shout-body-text{
 	border-radius: 3px;
 	padding: 5px;
@@ -194,12 +202,23 @@ li.shoutbox_color {
 	display: inline-block;
 }
 
-.shout .shout-body>div:not(:first-child) {
-	margin-top: 5px;
+.shout .shout-body-image img {
+	border-radius: 3px;
+	max-height: 100px;
+	max-width: 500px;
 }
 
-.shout .shout-pm-message{
-	font-weight:bold
+#shout-message-types i{
+	margin-right: 5px;
+	border-radius: 2px;
+	padding: 1px;
+	vertical-align: bottom;
+	cursor: pointer;
+}
+
+#shout-message-types .active-type {
+	color: white;
+	border: 1px solid #ccc;
 }
 </style>
 
@@ -215,6 +234,10 @@ li.shoutbox_color {
 
 	<div id="shoutbox_wrapper">
 		<div id="shout-controls-row" class="tcat">
+			<span id="shout-message-types">
+				<i id="shout-message-type-text" class="fa fa-comment-o fa-2x active-type" title="Post a comment"></i>
+				<i id="shout-message-type-image" class="fa fa-picture-o fa-2x" title="Post an image"></i>
+			</span>
 			<textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
 			<button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
 			<div class="shoutbox-reverse-button-wrapper"><div id="shout-reverse-button"><i class="fa fa-arrow-down"></i></div></div>
@@ -252,6 +275,22 @@ $(document).ready(function(){
 	
 	$("#shout-reverse-button").click(function(){
 		ShoutBox.toggleShoutboxOrder();
+	});
+	
+	$("#shout-message-type-text").click(function(){
+		ShoutBox.selectMessageType(ShoutboxMessageTypes.Text);
+
+		$.each($("#shout-message-types>i"), function(){ $(this).removeClass("active-type"); } );
+		$(this).addClass("active-type");
+		$("#shout_data").attr("placeholder", "Enter a message...")
+	});
+	
+	$("#shout-message-type-image").click(function(){
+		ShoutBox.selectMessageType(ShoutboxMessageTypes.Image);
+
+		$.each($("#shout-message-types>i"), function(){ $(this).removeClass("active-type"); } );
+		$(this).addClass("active-type");
+		$("#shout_data").attr("placeholder", "Enter an image url...")
 	});
 	
 	ShoutBox.load();

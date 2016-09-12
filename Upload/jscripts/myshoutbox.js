@@ -10,6 +10,11 @@
 // 
 //
 //
+var ShoutboxMessageTypes = {
+	Text: 1,
+	Image: 2
+};
+
 var ShoutBox = {
 	
 	refreshInterval: 60,
@@ -24,6 +29,7 @@ var ShoutBox = {
 	newLang: {},
 	Templates: {},
 	ActiveUserId: 0,
+	SelectedMessageType: ShoutboxMessageTypes.Text,
 	
 	getLanguageValue: function(key){
 		var languageValue = ShoutBox.newLang[key];
@@ -469,9 +475,14 @@ var ShoutBox = {
 		
 		var messages = "";
 		shout.messages.forEach(function(message) {
-			messages += ShoutBox.Templates['mysb_shout_message_text']
-								.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
-								.replace(new RegExp("{{message}}", 'g'), message.content);
+			switch(message.type){
+				case 1:
+					messages += ShoutBox.renderTextMessage(message);
+					break;
+				case 2:
+					messages += ShoutBox.renderImageMessage(message);
+					break;
+			}
 		});
 		
 		
@@ -483,11 +494,23 @@ var ShoutBox = {
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
 						.replace(new RegExp("{{messages}}", 'g'), messages);
 	},
-	
+
+	renderTextMessage: function(message){
+		return ShoutBox.Templates['mysb_shout_message_text']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{message}}", 'g'), message.content);
+	},
+
+	renderImageMessage: function(message){
+		return ShoutBox.Templates['mysb_shout_message_image']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{image_src}}", 'g'), message.content);
+	},
+
 	renderPmButton: function(userId) {
 		return ShoutBox.Templates['mysb_shout_button_pm'].replace(new RegExp("{{uid}}", 'g'), userId);
 	},
-	
+
 	renderReverseOrderButton: function(){
 		if(ShoutBox.orderShoutboxDesc){
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-down\"></i>");
@@ -530,10 +553,14 @@ var ShoutBox = {
 	buildShoutMessageViewModel: function(shout){
 		return {
 			id: shout.id,
-			type: shout.type,
+			type: parseInt(shout.type),
 			content: shout.message,
 			ip: shout.userIp,
 			dateTime: moment.unix(shout.dateTime)
 		};
 	},
+
+	selectMessageType: function(type) {
+		ShoutBox.SelectedMessageType = type;
+	}
 };

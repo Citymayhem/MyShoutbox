@@ -1,6 +1,6 @@
 <html>
 <head>
-<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1801"></script>
+<script type="text/javascript" src="jscripts/myshoutbox.js?ver=1802"></script>
 <script type="text/javascript" src="jscripts/moment.min.js"></script>
 <title>Full Shoutbox</title>
 <style>
@@ -77,14 +77,32 @@
 	margin-left: 5px;
 }
 
+.shout .shout-pm-message{
+	font-weight:bold
+}
+
+.shout .shout-body>div:not(:first-child) {
+	margin-top: 5px;
+}
+
 .shout .shout-body-text{
 	border-radius: 3px;
 	padding: 5px;
 	background: #F0F0F0;
 	display: inline-block;
 }
-.shout .shout-pm-message{
-	font-weight:bold
+
+.shout .shout-body-text{
+	border-radius: 3px;
+	padding: 5px;
+	background: #F0F0F0;
+	display: inline-block;
+}
+
+.shout .shout-body-image img {
+	border-radius: 3px;
+	max-height: 100px;
+	max-width: 500px;
 }
 </style>
 {$headerinclude}
