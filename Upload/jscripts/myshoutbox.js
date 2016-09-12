@@ -22,6 +22,7 @@ var ShoutBox = {
 	orderShoutboxDesc: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
 	newLang: {},
+	Templates: {},
 	ActiveUserId: 0,
 	
 	getLanguageValue: function(key){
@@ -51,6 +52,16 @@ var ShoutBox = {
 		return ('' + string).replace(htmlEscaper, function(match) {
 			return htmlEscapes[match];
 		});
+	},
+	
+	load: function(){
+		$.get("xmlhttp.php?action=mysb_get_templates", function(data){
+			ShoutBox.Templates['mysb_shout'] = data.mysb_shout;
+			ShoutBox.Templates['mysb_shout_message_text'] = data.mysb_shout_message_text;
+			console.log(ShoutBox.Templates);
+			ShoutBox.getShouts();
+		});
+		// todo: Error
 	},
 	
 	getShouts: function() {
@@ -431,15 +442,18 @@ var ShoutBox = {
 						: "PM to " + shout.pmTargetUsername;
 		}
 		
+		var messages = ShoutBox.Templates['mysb_shout_message_text']
+								.replace(new RegExp("{{message}}", 'g'), shout.message);
 		
-		return ShoutBox.shoutMessageFormat
+		
+		return ShoutBox.Templates['mysb_shout']
 						.replace(new RegExp("{{pmMessage}}", 'g'), pmMessage)
 						.replace(new RegExp("{{datetime}}", 'g'), moment.unix(shout.dateTime).format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
 						.replace(new RegExp("{{uid}}", 'g'), shout.userId)
 						.replace(new RegExp("{{shoutId}}", 'g'), shout.id)
-						.replace(new RegExp("{{message}}", 'g'), shout.message);
+						.replace(new RegExp("{{messages}}", 'g'), messages);
 	},
 	
 	renderReverseOrderButton: function(){
@@ -451,29 +465,5 @@ var ShoutBox = {
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-up\"></i>");
 			$("#shout-reverse-button").attr("title", ShoutBox.getLanguageValue("mysb_reverse_shout_order_to_desc"));
 		}
-	},
-	
-	shoutMessageFormat: "<div class=\"shout\">\
-	<div class=\"shout-author\">\
-		<a title=\"{{datetime}}\">\
-			<img class=\"shout-author-avatar\" src=\"{{avatarUrl}}\" \>\
-		</a>\
-	</div>\
-	<div class=\"shout-content\">\
-		<div class=\"shout-content-header\">\
-			<div class=\"shout-author-name\">\
-				{{formattedName}}\
-			</div>\
-			<span>{{datetime}}</span>\
-			<div class=\"shout-links\">\
-				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.pvtAdd({{uid}});\" title=\"Private Message\"><i class=\"fa fa-envelope-o\"></i></a>\
-				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.promptReason({{shoutId}});\" title=\"Report\"><i class=\"fa fa-flag\"></i></a>\
-			</div>\
-			<div class=\"shout-pm-message\">{{pmMessage}}</div>\
-		</div>\
-		<div class=\"shout-body\">\
-			<div class=\"shout-body-text\">{{message}}</div>\
-		</div>\
-	</div>\
-</div>"
+	}
 };

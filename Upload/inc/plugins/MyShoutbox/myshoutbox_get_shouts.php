@@ -1,7 +1,5 @@
 <?php
-
-if(!defined('IN_MYBB'))
-	die('This file cannot be accessed directly.');
+if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
 require_once MYBB_ROOT . "inc/plugins/MyShoutbox/models/ShoutboxShout.php";
 require_once MYBB_ROOT . "inc/plugins/MyShoutbox/models/ShoutboxShoutType.php";
@@ -40,11 +38,11 @@ function myshoutbox_get_shouts($last_id = 0)
 	
 	$allowedAccess = myshoutbox_can_view();
 	if ($allowedAccess !== true){
-		return UnauthorisedResponse();
+		UnauthorisedResponse();
 	}
 	
 	if(!isInteger($last_id)){
-		return BadRequestResponse("Invalid last shout message Id");
+		BadRequestResponse("Invalid last shout message Id");
 	}
 	
 	require_once MYBB_ROOT.'inc/class_parser.php';
@@ -151,5 +149,5 @@ function myshoutbox_get_shouts($last_id = 0)
 	
 	$response->lastShoutId = $maxId;
 	
-	return OkResponseWithObject($response);
+	OkResponseWithObject($response);
 }

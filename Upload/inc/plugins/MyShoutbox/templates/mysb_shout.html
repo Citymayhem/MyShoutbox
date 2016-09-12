@@ -1,0 +1,22 @@
+<div class="shout">
+	<div class="shout-author">
+		<a title="{{datetime}}">
+			<img class="shout-author-avatar" src="{{avatarUrl}}" >
+		</a>
+	</div>
+	<div class="shout-content">
+		<div class="shout-content-header">
+			<div class="shout-author-name">
+				{{formattedName}}
+			</div>
+			<span>{{datetime}}</span>
+			<div class="shout-links">
+				<a href="javascript:void(0)" onclick="ShoutBox.pvtAdd({{uid}});" title="Private Message"><i class="fa fa-envelope-o"></i></a>
+			</div>
+			<div class="shout-pm-message">{{pmMessage}}</div>
+		</div>
+		<div class="shout-body">
+			{{messages}}
+		</div>
+	</div>
+</div>
