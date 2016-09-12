@@ -32,6 +32,16 @@ var AddImageShoutError = {
 	ImageFileSizeTooBig: "add_image_shout_error_image_file_size_too_big"
 };
 
+var AddVideoShoutErrorMessage = {
+	add_video_shout_error_flood_protection: "Please slow down. You are posting too quickly.",
+	add_video_shout_error_invalid_video_url: "That YouTube URL does not look correct.",
+};
+
+var AddVideoShoutError = {
+	FloodProtection: "add_video_shout_error_flood_protection",
+	InvalidVideoUrl: "add_video_shout_error_invalid_video_url"
+};
+
 var ShoutBox = {
 	
 	refreshInterval: 60,
@@ -176,6 +186,9 @@ var ShoutBox = {
 		if(ShoutBox.SelectedMessageType == ShoutboxMessageTypes.Image){
 			ShoutBox.postImageShout(message);
 		}
+		else if(ShoutBox.SelectedMessageType == ShoutboxMessageTypes.Video){
+			ShoutBox.postVideoShout(message);
+		}
 		else {
 			ShoutBox.postTextShout(message);
 		}
@@ -194,6 +207,25 @@ var ShoutBox = {
 				if(response.responseJSON != null){
 					var errorCode = response.responseJSON.message;
 					ShoutBox.alert(AddImageShoutErrorMessage[errorCode]);
+				}
+
+				ShoutBox.indicateShoutPostingFinished();
+			});
+	},
+	
+	postVideoShout: function(url){
+		var request = { videoUrl: url };
+		
+		$.post("xmlhttp.php?action=mysb_add_video_shout", request)
+			.done(function(data){
+				ShoutBox.emptyMessageBox();
+				ShoutBox.indicateShoutPostingFinished();
+				ShoutBox.getShouts();
+			})
+			.error(function(response){
+				if(response.responseJSON != null){
+					var errorCode = response.responseJSON.message;
+					ShoutBox.alert(AddVideoShoutErrorMessage[errorCode]);
 				}
 
 				ShoutBox.indicateShoutPostingFinished();

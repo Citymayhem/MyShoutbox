@@ -301,7 +301,7 @@ $(document).ready(function(){
 	});
 	
 	$("#shout-message-type-video").click(function(){
-		ShoutBox.selectMessageType(ShoutboxMessageTypes.Image);
+		ShoutBox.selectMessageType(ShoutboxMessageTypes.Video);
 
 		$.each($("#shout-message-types>i"), function(){ $(this).removeClass("active-type"); } );
 		$(this).addClass("active-type");
