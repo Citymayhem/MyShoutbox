@@ -1211,7 +1211,13 @@ function myshoutbox_get_shouts($last_id = 0)
 							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
 						WHERE s.id > {$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . " %') AND s.hidden = 'no' 
 						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}");
-	
+						// TODO: This limit logic is flawed. 
+						// It only works for first load.
+							// For consecutive get shouts, there is a chance this will ignore messages
+							// We still need protection against DOS
+						// This logic also doesn't work for hidden shouts
+
+
 	// fetch results
 	$response = new ShoutboxGetShoutsResponse();
 	$response->canSeeIps = $mybb->usergroup['cancp'] === "1";
