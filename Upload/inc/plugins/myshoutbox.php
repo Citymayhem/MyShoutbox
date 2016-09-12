@@ -324,7 +324,6 @@ function myshoutbox_install()
 
 function myshoutbox_activate()
 {
-	// TODO: Add new templates: msyb_shout, mysb_shout_message_text, etc.
 	global $db, $mybb;
 	
 	// load templates

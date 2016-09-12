@@ -56,11 +56,16 @@ var ShoutBox = {
 	
 	load: function(){
 		$.get("xmlhttp.php?action=mysb_get_templates", function(data){
+			ShoutBox.hideAlert();
 			ShoutBox.Templates = data;
 			
+			ShoutBox.renderStructure();
+			
 			ShoutBox.getShouts();
+		}).error(function(){
+			ShoutBox.alert("Error loading shoutbox. Trying again...", -1);
+			setTimeout(ShoutBox.load, 3000);
 		});
-		// todo: Error
 	},
 	
 	getShouts: function() {
@@ -90,49 +95,25 @@ var ShoutBox = {
 
 		for (var i = numberOfShouts - 1; i >= 0; i--) 
 		{
-			var currentEntry = messages[i];
-			
-			var shoutMessageViewModel = {
-				id: currentEntry.id,
-				type: currentEntry.type,
-				content: currentEntry.message,
-				ip: currentEntry.userIp,
-				dateTime: moment.unix(currentEntry.dateTime)
-			};
+			var currentShout = messages[i];
+			var shoutMessageViewModel = ShoutBox.buildShoutMessageViewModel(currentShout);
 			
 			if(ShoutBox.Shouts.length != 0){
-				var previousEntry = ShoutBox.Shouts[ShoutBox.Shouts.length - 1];
+				var previousEntryViewModel = ShoutBox.Shouts[ShoutBox.Shouts.length - 1];
 				
-				var sameUserIdAsPreviousEntry = currentEntry.userId == previousEntry.userId;
-				var samePmUserIdAsPreviousEntry = currentEntry.pmTargetUserId == previousEntry.pmTargetUserId;
-				
-				var timeDifferenceInHours = shoutMessageViewModel.dateTime.diff(previousEntry.dateTime, 'hours')
-				var withinHourOfPreviousEntry = timeDifferenceInHours <= 1;
-				
-				if(sameUserIdAsPreviousEntry && samePmUserIdAsPreviousEntry && withinHourOfPreviousEntry){
-					previousEntry.messages.push(shoutMessageViewModel);
+				if(ShoutBox.shouldMergeShouts(previousEntryViewModel, currentShout)){
+					previousEntryViewModel.messages.push(shoutMessageViewModel);
 					continue;
 				}
 			}
-						
-			ShoutBox.Shouts.push({
-				userId: currentEntry.userId,
-				avatarUrl: currentEntry.avatarUrl,
-				dateTime: shoutMessageViewModel.dateTime,
-				formattedUsername: currentEntry.formattedUsername,
-				isPm: currentEntry.isPm,
-				pmTargetUserId: currentEntry.pmTargetUserId,
-				pmTargetUsername: currentEntry.pmTargetUsername,
-				messages: new Array(shoutMessageViewModel)
-			});
+			
+			var shoutViewModel = ShoutBox.buildShoutViewModel(currentShout, shoutMessageViewModel);
+			ShoutBox.Shouts.push(shoutViewModel);
 		}
 
 		ShoutBox.lastID = lastID;
 
 		var shouldScrollToBottom = ShoutBox.firstRun && !ShoutBox.orderShoutboxDesc;
-		if (ShoutBox.firstRun) {
-			ShoutBox.renderStructure();
-		}
 		
 		ShoutBox.renderShoutbox();
 		
@@ -366,10 +347,16 @@ var ShoutBox = {
 		$("#shouting-status").attr("disabled","disabled");
 	},
 	
-	alert: function(msg) {
-		$("#shoutbox-alert").css("display","table-row");
+	alert: function(msg, hideAfterInMs=5000) {
+		$("#shoutbox-alert").css("display","block");
 		$("#shoutbox-alert-contents").html(msg);
-		setTimeout(function(){$("#shoutbox-alert").css("display","none");}, 5000);
+		
+		if(hideAfterInMs != -1)
+			setTimeout(function(){ShoutBox.hideAlert();}, hideAfterInMs);
+	},
+	
+	hideAlert: function(){
+		$("#shoutbox-alert").css("display","none");
 	},
 	
 	resizeMessageBoxToFitContents: function(){
@@ -510,5 +497,43 @@ var ShoutBox = {
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-up\"></i>");
 			$("#shout-reverse-button").attr("title", ShoutBox.getLanguageValue("mysb_reverse_shout_order_to_desc"));
 		}
-	}
+	},
+	
+	shouldMergeShouts: function(previousShoutViewModel, shout) {
+		if(shout.userId != previousShoutViewModel.userId)
+			return false;
+		
+		if(shout.pmTargetUserId != previousShoutViewModel.pmTargetUserId)
+			return false;
+		
+		var timeDifferenceInHours = moment.unix(shout.dateTime).diff(previousShoutViewModel.dateTime, 'hours')
+		
+		if(timeDifferenceInHours > 1)
+			return false;
+		
+		return true;
+	},
+	
+	buildShoutViewModel: function(shout, shoutMessageViewModel){
+		return {
+			userId: shout.userId,
+			avatarUrl: shout.avatarUrl,
+			dateTime: shoutMessageViewModel.dateTime,
+			formattedUsername: shout.formattedUsername,
+			isPm: shout.isPm,
+			pmTargetUserId: shout.pmTargetUserId,
+			pmTargetUsername: shout.pmTargetUsername,
+			messages: new Array(shoutMessageViewModel)
+		};
+	},
+	
+	buildShoutMessageViewModel: function(shout){
+		return {
+			id: shout.id,
+			type: shout.type,
+			content: shout.message,
+			ip: shout.userIp,
+			dateTime: moment.unix(shout.dateTime)
+		};
+	},
 };
