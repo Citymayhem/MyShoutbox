@@ -25,7 +25,7 @@ if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
 abstract class MyShoutboxConfiguration {
     const InstallDirectory = MYBB_ROOT . "inc/plugins/MyShoutbox/";
-    const DatabaseVersion = 1;
+    const DatabaseVersion = 2;
 }
 
 require_once MyShoutboxConfiguration::InstallDirectory . "core.php";
