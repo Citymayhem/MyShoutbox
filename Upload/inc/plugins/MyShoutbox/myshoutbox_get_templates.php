@@ -1,9 +1,6 @@
 <?php
 if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
-require_once MYBB_ROOT . "inc/plugins/MyShoutbox/responses.php";
-
-
 class GetTemplatesResponse {
 	public $mysb_shout;
 	public $mysb_shout_message_text;

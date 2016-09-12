@@ -3,7 +3,6 @@ if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
 require_once MYBB_ROOT . "inc/plugins/MyShoutbox/models/ShoutboxShout.php";
 require_once MYBB_ROOT . "inc/plugins/MyShoutbox/models/ShoutboxShoutType.php";
-require_once MYBB_ROOT . "inc/plugins/MyShoutbox/responses.php";
 
 function myshoutbox_parse_message($parser, $message, $me_username){
 	global $mybb;

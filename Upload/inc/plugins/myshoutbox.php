@@ -291,43 +291,9 @@ function myshoutbox_install()
 	$db->insert_query("settings", $shoutbox_setting_18);
 	$db->insert_query("settings", $shoutbox_setting_19);
 	$db->insert_query("settings", $shoutbox_setting_20);
-	
-	$db->write_query("CREATE TABLE `" . TABLE_PREFIX . "mysb_version` (
-						`version` int(10) NOT NULL,
-						`dateTime` DATETIME NOT NULL
-					  ) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
-	
-	// create table
-	$db->write_query("CREATE TABLE `".TABLE_PREFIX."mysb_shouts` (
-	  `id` int(10) NOT NULL auto_increment,
-	  `uid` int(10) NOT NULL,
-	  `shout_msg` text NOT NULL,
-	  `shout_date` int(10) NOT NULL,
-	  `shout_ip` varchar(30) NOT NULL,
-	  `hidden` varchar(10) NOT NULL,
-	  PRIMARY KEY  (`id`)
-		) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
-	
-	// create reports table
-	$db->write_query("CREATE TABLE `".TABLE_PREFIX."mysb_reports` (
-	  `rid` int(10) NOT NULL auto_increment,
-	  `username` varchar(100) NOT NULL DEFAULT '',
-	  `uid` int(10) NOT NULL DEFAULT 0,
-	  `reason` varchar(255) NOT NULL DEFAULT '',
-	  `date` bigint(30) NOT NULL DEFAULT 0,
-	  `sid` int(10) NOT NULL DEFAULT 0,
-	  `marked` tinyint(1) NOT NULL DEFAULT 0,
-	  `author_uid` int(10) NOT NULL DEFAULT 0,
-	  `author_username` varchar(30) NOT NULL DEFAULT '',
-	  PRIMARY KEY  (`rid`), KEY(`date`)
-		) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
-		
-	$db->write_query("INSERT INTO ".TABLE_PREFIX."mysb_shouts VALUES (NULL, 1, 'Test Shout! Without any shout, shoutbox will display Loading... forever.. you need at least one shout, so here it is.', ".time().", '127.0.0.1', 'no')");
-	$db->write_query("INSERT INTO ".TABLE_PREFIX."mysb_version VALUES (" . MyShoutboxConfiguration::DatabaseVersion . ", UTC_TIMESTAMP())");
-	
-	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_banned` smallint(1) NOT NULL DEFAULT 0;");
-	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_banned_reason` varchar(255) NOT NULL DEFAULT '';");
-	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_order_desc` TINYINT(1) NOT NULL DEFAULT 1;");
+
+	$dbMigrator = new DatabaseMigrator(MyShoutboxConfiguration::InstallDirectory);
+	$dbMigrator->performMigration(0, MyShoutboxConfiguration::DatabaseVersion);
 	
 	// rebuild settings...
 	rebuild_settings();
@@ -358,15 +324,21 @@ function myshoutbox_activate()
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 	
 	//find_replace_templatesets('index', '#{\$boardstats}#', "{myshoutbox_".$mybb->settings['mysb_key']."}\n{\$boardstats}");
-	find_replace_templatesets('index', '#' . preg_quote('{$forums}') . '#', '{myshoutbox_'.$mybb->settings['mysb_key'].'}
-{$forums}');
+	find_replace_templatesets('index', '#' . preg_quote('{$forums}') . '#', '{myshoutbox_'.$mybb->settings['mysb_key'].'}' . "\r\n" . '{$forums}');
 
+	$currentDbVersion = $db->fetch_array($db->write_query("SELECT Version FROM " . TABLE_PREFIX . "mysb_version ORDER BY `DateTime` DESC LIMIT 1"))["Version"];
+
+	if($currentDbVersion < MyShoutboxConfiguration::DatabaseVersion) {
+		$dbMigrator = new DatabaseMigrator(MyShoutboxConfiguration::InstallDirectory);
+		$dbMigrator->performMigration($currentDbVersion, MyShoutboxConfiguration::DatabaseVersion);
+	}
 }
 
 function myshoutbox_uninstall()
 {
 	global $db;
 	
+	$db->write_query("DROP TABLE ".TABLE_PREFIX."mysb_version");
 	$db->write_query("DROP TABLE ".TABLE_PREFIX."mysb_shouts");
 	$db->write_query("DROP TABLE ".TABLE_PREFIX."mysb_reports");
 	$db->write_query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name = 'mysb_shoutbox'");
@@ -396,7 +368,7 @@ function myshoutbox_deactivate()
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 
-	find_replace_templatesets('index', '#{myshoutbox_'.$mybb->settings['mysb_key'].'}#', '', 0);
+	find_replace_templatesets('index', '#{myshoutbox_'.$mybb->settings['mysb_key'].'}' . "\r\n" . '#', '', 0);
 }
 
 function myshoutbox_load()
