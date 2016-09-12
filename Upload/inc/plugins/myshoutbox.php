@@ -23,7 +23,12 @@
 
 if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
-require_once MYBB_ROOT . "inc/plugins/MyShoutbox/core.php";
+abstract class MyShoutboxConfiguration {
+    const InstallDirectory = MYBB_ROOT . "inc/plugins/MyShoutbox/";
+    const DatabaseVersion = 1;
+}
+
+require_once MyShoutboxConfiguration::InstallDirectory . "core.php";
 
 $plugins->add_hook("index_end", "myshoutbox_index");
 $plugins->add_hook("xmlhttp", "myshoutbox_load");
@@ -287,6 +292,11 @@ function myshoutbox_install()
 	$db->insert_query("settings", $shoutbox_setting_19);
 	$db->insert_query("settings", $shoutbox_setting_20);
 	
+	$db->write_query("CREATE TABLE `" . TABLE_PREFIX . "mysb_version` (
+						`version` int(10) NOT NULL,
+						`dateTime` DATETIME NOT NULL
+					  ) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+	
 	// create table
 	$db->write_query("CREATE TABLE `".TABLE_PREFIX."mysb_shouts` (
 	  `id` int(10) NOT NULL auto_increment,
@@ -313,6 +323,7 @@ function myshoutbox_install()
 		) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
 		
 	$db->write_query("INSERT INTO ".TABLE_PREFIX."mysb_shouts VALUES (NULL, 1, 'Test Shout! Without any shout, shoutbox will display Loading... forever.. you need at least one shout, so here it is.', ".time().", '127.0.0.1', 'no')");
+	$db->write_query("INSERT INTO ".TABLE_PREFIX."mysb_version VALUES (" . MyShoutboxConfiguration::DatabaseVersion . ", UTC_TIMESTAMP())");
 	
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_banned` smallint(1) NOT NULL DEFAULT 0;");
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` ADD `mysb_banned_reason` varchar(255) NOT NULL DEFAULT '';");
