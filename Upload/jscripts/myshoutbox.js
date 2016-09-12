@@ -54,7 +54,6 @@ var ShoutBox = {
 	},
 	
 	getShouts: function() {
-		setTimeout("ShoutBox.getShouts();", ShoutBox.refreshInterval * 1000);
 		/*
 		if (typeof Ajax == 'object') {
 			new Ajax.Request('xmlhttp.php?action=show_shouts&last_id='+ShoutBox.lastID, {method: 'get', onComplete: function(request) { ShoutBox.shoutsLoaded(request); } });
@@ -62,6 +61,8 @@ var ShoutBox = {
 		*/		
 		$.get("xmlhttp.php?action=get_shouts&last_id="+ShoutBox.lastID, function(data){
 			ShoutBox.shoutsRetrieved(data);
+		}).always(function(){
+			setTimeout("ShoutBox.getShouts();", ShoutBox.refreshInterval * 1000);
 		});
 	},
 	
