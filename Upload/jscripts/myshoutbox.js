@@ -455,7 +455,7 @@ var ShoutBox = {
 	
 	shoutMessageFormat: "<div class=\"shout\">\
 	<div class=\"shout-author\">\
-		<a title=\"{{datetime}}\" href=\"http://citymayhem.net/user-2642.html\">\
+		<a title=\"{{datetime}}\">\
 			<img class=\"shout-author-avatar\" src=\"{{avatarUrl}}\" \>\
 		</a>\
 	</div>\
