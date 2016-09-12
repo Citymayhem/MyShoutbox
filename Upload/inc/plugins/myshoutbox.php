@@ -524,6 +524,10 @@ li.shoutbox_color {
 	background: #F0F0F0;
 	display: inline-block;
 }
+
+.shout .shout-pm-message{
+	font-weight:bold
+}
 </style>
 
 <div class="tborder">
@@ -668,6 +672,9 @@ $(document).ready(function(){
 	background: #F0F0F0;
 	display: inline-block;
 }
+.shout .shout-pm-message{
+	font-weight:bold
+}
 </style>
 {$headerinclude}
 </head>
@@ -798,6 +805,9 @@ li.shoutbox_color {
 	padding: 5px;
 	background: #F0F0F0;
 	display: inline-block;
+}
+.shout .shout-pm-message{
+	font-weight:bold
 }
 </style>
 
@@ -1158,6 +1168,7 @@ function myshoutbox_parse_message($parser, $message, $me_username){
 }
 
 class ShoutboxGetShoutsResponse {
+	public $currentUserId;
 	public $lastShoutId = 0;
 	public $canSeeIps = false;
 	public $canDelete = false;
@@ -1207,7 +1218,7 @@ function myshoutbox_get_shouts($last_id = 0)
 	$response->canDelete = myshoutbox_can_delete();
 	$response->messages = array();
 	
-	$currentUserId = $mybb->user['uid'];
+	$response->currentUserId = $mybb->user['uid'];
 	$maxId = $last_id;
 	$usernames_cache = array();
 	while ($row = $db->fetch_array($query))
@@ -1232,12 +1243,12 @@ function myshoutbox_get_shouts($last_id = 0)
 		{
 			sscanf($message, "/pvt %d", $pmTargetUserId);
 			$pmTargetUserId = intval((int)$pmTargetUserId);
-			if ($currentUserId != $pmTargetUserId && $currentUserId != $shoutUserId)
+			if ($response->currentUserId != $pmTargetUserId && $response->currentUserId != $shoutUserId)
 			{
 				continue;
 			}
 			
-			if ($currentUserId == $pmTargetUserId)
+			if ($response->currentUserId == $pmTargetUserId)
 			{
 				$pmTargetUsername = $mybb->user['username'];
 			}

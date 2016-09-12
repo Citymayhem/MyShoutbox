@@ -22,6 +22,7 @@ var ShoutBox = {
 	orderShoutboxDesc: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
 	newLang: {},
+	ActiveUserId: 0,
 	
 	getLanguageValue: function(key){
 		var languageValue = ShoutBox.newLang[key];
@@ -68,6 +69,8 @@ var ShoutBox = {
 	shoutsRetrieved: function(response) {
 		var lastID = response.lastShoutId;
 		var messages = response.messages;
+		
+		ShoutBox.ActiveUserId = response.currentUserId;
 
 		if (lastID <= ShoutBox.lastID) {
 			return;
@@ -420,7 +423,17 @@ var ShoutBox = {
 	},
 	
 	renderShout: function(shout){
+		var pmMessage = "";
+		
+		if(shout.pmTargetUserId != null){
+			pmMessage = shout.pmTargetUserId == ShoutBox.ActiveUserId
+						? "PM to you"
+						: "PM to " + shout.pmTargetUsername;
+		}
+		
+		
 		return ShoutBox.shoutMessageFormat
+						.replace(new RegExp("{{pmMessage}}", 'g'), pmMessage)
 						.replace(new RegExp("{{datetime}}", 'g'), moment.unix(shout.dateTime).format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
@@ -456,6 +469,7 @@ var ShoutBox = {
 				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.pvtAdd({{uid}});\" title=\"Private Message\"><i class=\"fa fa-envelope-o\"></i></a>\
 				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.promptReason({{shoutId}});\" title=\"Report\"><i class=\"fa fa-flag\"></i></a>\
 			</div>\
+			<div class=\"shout-pm-message\">{{pmMessage}}</div>\
 		</div>\
 		<div class=\"shout-body\">\
 			<div class=\"shout-body-text\">{{message}}</div>\
