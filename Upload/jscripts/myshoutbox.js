@@ -56,9 +56,8 @@ var ShoutBox = {
 	
 	load: function(){
 		$.get("xmlhttp.php?action=mysb_get_templates", function(data){
-			ShoutBox.Templates['mysb_shout'] = data.mysb_shout;
-			ShoutBox.Templates['mysb_shout_message_text'] = data.mysb_shout_message_text;
-			console.log(ShoutBox.Templates);
+			ShoutBox.Templates = data;
+			
 			ShoutBox.getShouts();
 		});
 		// todo: Error
@@ -91,7 +90,41 @@ var ShoutBox = {
 
 		for (var i = numberOfShouts - 1; i >= 0; i--) 
 		{
-			ShoutBox.Shouts.push(messages[i]);
+			var currentEntry = messages[i];
+			
+			var shoutMessageViewModel = {
+				id: currentEntry.id,
+				type: currentEntry.type,
+				content: currentEntry.message,
+				ip: currentEntry.userIp,
+				dateTime: moment.unix(currentEntry.dateTime)
+			};
+			
+			if(ShoutBox.Shouts.length != 0){
+				var previousEntry = ShoutBox.Shouts[ShoutBox.Shouts.length - 1];
+				
+				var sameUserIdAsPreviousEntry = currentEntry.userId == previousEntry.userId;
+				var samePmUserIdAsPreviousEntry = currentEntry.pmTargetUserId == previousEntry.pmTargetUserId;
+				
+				var timeDifferenceInHours = shoutMessageViewModel.dateTime.diff(previousEntry.dateTime, 'hours')
+				var withinHourOfPreviousEntry = timeDifferenceInHours <= 1;
+				
+				if(sameUserIdAsPreviousEntry && samePmUserIdAsPreviousEntry && withinHourOfPreviousEntry){
+					previousEntry.messages.push(shoutMessageViewModel);
+					continue;
+				}
+			}
+						
+			ShoutBox.Shouts.push({
+				userId: currentEntry.userId,
+				avatarUrl: currentEntry.avatarUrl,
+				dateTime: shoutMessageViewModel.dateTime,
+				formattedUsername: currentEntry.formattedUsername,
+				isPm: currentEntry.isPm,
+				pmTargetUserId: currentEntry.pmTargetUserId,
+				pmTargetUsername: currentEntry.pmTargetUsername,
+				messages: new Array(shoutMessageViewModel)
+			});
 		}
 
 		ShoutBox.lastID = lastID;
@@ -442,18 +475,30 @@ var ShoutBox = {
 						: "PM to " + shout.pmTargetUsername;
 		}
 		
-		var messages = ShoutBox.Templates['mysb_shout_message_text']
-								.replace(new RegExp("{{message}}", 'g'), shout.message);
+		var pmButton = "";
+		if(shout.userId != ShoutBox.ActiveUserId){
+			pmButton = ShoutBox.renderPmButton(shout.userId);
+		}
+		
+		var messages = "";
+		shout.messages.forEach(function(message) {
+			messages += ShoutBox.Templates['mysb_shout_message_text']
+								.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+								.replace(new RegExp("{{message}}", 'g'), message.content);
+		});
 		
 		
 		return ShoutBox.Templates['mysb_shout']
 						.replace(new RegExp("{{pmMessage}}", 'g'), pmMessage)
-						.replace(new RegExp("{{datetime}}", 'g'), moment.unix(shout.dateTime).format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{pmButton}}", 'g'), pmButton)
+						.replace(new RegExp("{{datetime}}", 'g'), shout.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
-						.replace(new RegExp("{{uid}}", 'g'), shout.userId)
-						.replace(new RegExp("{{shoutId}}", 'g'), shout.id)
 						.replace(new RegExp("{{messages}}", 'g'), messages);
+	},
+	
+	renderPmButton: function(userId) {
+		return ShoutBox.Templates['mysb_shout_button_pm'].replace(new RegExp("{{uid}}", 'g'), userId);
 	},
 	
 	renderReverseOrderButton: function(){
