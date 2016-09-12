@@ -15,7 +15,12 @@ Modifications made to the MyShoutbox plugin
 
 ##When updating from the previous version of MyShoutbox##
 * Make sure you are on the latest version of the old MyShoutbox
-* 
+* Follow the typical update instructions
+
+##Typical  Update Instructions##
+1. Deactivate MyShoutbox
+2. Upload the latest version
+3. Activate MyShoutbox
 
 ##To Enable Full Unicode Support (Emojis, etc.)##
 
@@ -26,8 +31,3 @@ Change<br>
 To<br>
 `$config['database']['encoding'] = 'utf8mb4';`<br>
 
-
-###When Updating###
-1. Deactivate MyShoutbox
-2. Upload the latest version
-3. Activate MyShoutbox
