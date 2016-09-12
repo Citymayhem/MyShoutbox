@@ -42,7 +42,14 @@ function PerformHeadRequest($url){
 	return $response;
 }
 
-// TODO: Generate error messages clientside
+abstract class AddImageShoutError {
+	const FloodProtection = "add_image_shout_error_flood_protection";
+	const InvalidImageUrl = "add_image_shout_error_invalid_image_url";
+	const CouldNotRetrieveImage = "add_image_shout_error_could_not_retrieve_image";
+	const InvalidFileType = "add_image_shout_error_invalid_file_type";
+	const ImageFileSizeTooBig = "add_image_shout_error_image_file_size_too_big";
+}
+
 function myshoutbox_add_image_shout($url)
 {	
 	global $db, $mybb;
@@ -58,28 +65,28 @@ function myshoutbox_add_image_shout($url)
 	$userId = intval($mybb->user['uid']);
 	
 	if(!myshoutbox_IsUserAllowedByFloodProtectionToPost($userId)){
-		BadRequestResponse("Flood protection.");
+		BadRequestResponse(AddImageShoutError::FloodProtection);
 	}
 	
 	if($url == null || empty(trim($url)))
 	{
-		BadRequestResponse("Invalid image url.");
+		BadRequestResponse(AddImageShoutError::InvalidImageUrl);
 	}
 	
 	$headResponse = PerformHeadRequest($url);
 	
 	if($headResponse->StatusCode != 200){
-		BadRequestResponse("Could not retrieve image.");
+		BadRequestResponse(AddImageShoutError::CouldNotRetrieveImage);
 	}
 	
 	$contentType = $headResponse->ContentType;
 	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png"){
-		BadRequestResponse("Invalid file type. Must be JPEG, GIF or PNG");
+		BadRequestResponse(AddImageShoutError::InvalidFileType);
 	}
 	
 	if($headResponse->ContentLength > 1048576){
 		// TODO: Replace with a thumbnail of the image if it's a reasonable size
-		BadRequestResponse("Image is too big");
+		BadRequestResponse(AddImageShoutError::ImageFileSizeTooBig);
 	}
 	
 	$shout_data = array(
@@ -92,7 +99,7 @@ function myshoutbox_add_image_shout($url)
 	);
 		
 	if (!$db->insert_query('mysb_shouts', $shout_data)) {
-		// TODO: Log error
+		error_log("Error adding shoutbox image shout. " . $db->error);
 		InternalServerErrorResponse();
 	}
 	

@@ -15,6 +15,22 @@ var ShoutboxMessageTypes = {
 	Image: 2
 };
 
+var AddImageShoutErrorMessage = {
+	add_image_shout_error_floodProtection: "Please slow down. You are posting too quickly.",
+	add_image_shout_error_invalid_image_url: "That image URL does not look correct.",
+	add_image_shout_error_could_not_retrieve_image: "There was an error retrieving the image (maybe it's private access?). Please check your URL.",
+	add_image_shout_error_invalid_file_type: "The image must be JPEG, PNG or GIF.",
+	add_image_shout_error_image_file_size_too_big: "The image must be 10MB or less."
+};
+
+var AddImageShoutError = {
+	FloodProtection: "add_image_shout_error_floodProtection",
+	InvalidImageUrl: "add_image_shout_error_invalid_image_url",
+	CouldNotRetrieveImage: "add_image_shout_error_could_not_retrieve_image",
+	InvalidFileType: "add_image_shout_error_invalid_file_type",
+	ImageFileSizeTooBig: "add_image_shout_error_image_file_size_too_big"
+};
+
 var ShoutBox = {
 	
 	refreshInterval: 60,
@@ -174,10 +190,9 @@ var ShoutBox = {
 				ShoutBox.getShouts();
 			})
 			.error(function(response){
-				// TODO: Generate error messages clientside
 				if(response.responseJSON != null){
-					var errorMessage = response.responseJSON.message;
-					ShoutBox.alert(errorMessage);
+					var errorCode = response.responseJSON.message;
+					ShoutBox.alert(AddImageShoutErrorMessage[errorCode]);
 				}
 
 				ShoutBox.indicateShoutPostingFinished();
@@ -389,15 +404,15 @@ var ShoutBox = {
 	},
 	
 	alert: function(msg, hideAfterInMs=5000) {
-		$("#shoutbox-alert").css("display","block");
 		$("#shoutbox-alert-contents").html(msg);
+		$("#shoutbox-alert").slideToggle();
 		
 		if(hideAfterInMs != -1)
 			setTimeout(function(){ShoutBox.hideAlert();}, hideAfterInMs);
 	},
 	
 	hideAlert: function(){
-		$("#shoutbox-alert").css("display","none");
+		$("#shoutbox-alert").slideUp();
 	},
 	
 	resizeMessageBoxToFitContents: function(){

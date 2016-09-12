@@ -5,6 +5,12 @@
 	display:none;
 	border-left: 0;
 	border-right: 0;
+	position: absolute;
+	left: 0px;
+	z-index: 1;
+	width: 100%;
+	padding:0;
+	background: rgb(255, 221, 221) none repeat scroll 0% 0%;
 }
 
 #shoutbox-alert td{
@@ -12,7 +18,7 @@
 }
 
 #shoutbox-alert-contents{
-	padding:5px;
+	padding:10px;
 }
 
 #shout-controls-row {
@@ -222,7 +228,7 @@ li.shoutbox_color {
 }
 </style>
 
-<div class="tborder">
+<div class="tborder" style="position: relative;">
 	<div class="thead">
 		<div class="expcolimage"><img src="{$theme['imgdir']}/collapse.gif" id="shoutbox_img" class="expander" alt="[-]" /></div>
 		<div>
@@ -230,7 +236,7 @@ li.shoutbox_color {
 		</div>
 	</div>
 
-	<div id="shoutbox-alert" class="trow1"><div id="shoutbox-alert-contents">Alert</div></div>
+	<div id="shoutbox-alert" class="trow1 alert alert-danger"><div id="shoutbox-alert-contents">Alert</div></div>
 
 	<div id="shoutbox_wrapper">
 		<div id="shout-controls-row" class="tcat">
