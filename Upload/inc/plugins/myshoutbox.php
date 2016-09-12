@@ -1175,8 +1175,13 @@ class ShoutboxGetShoutsResponse {
 	public $messages = array();
 }
 
+abstract class ShoutboxShoutType {
+	const Text = 1;
+}
+
 class ShoutboxShout {
 	public $id;
+	public $type;
 	public $isPm;
 	public $isHidden;
 	public $pmTargetUserId;
@@ -1277,8 +1282,10 @@ function myshoutbox_get_shouts($last_id = 0)
 		
 		array_push($response->messages, $shout);
 		$shout->id = $shoutId;
+		$shout->type = ShoutboxShoutType::Text;
 		$shout->message = $message;
 		$shout->userId = $shoutUserId;
+		
 		$shout->avatarUrl = $row['avatar'];
 		
 		if(empty($shout->avatarUrl)){
