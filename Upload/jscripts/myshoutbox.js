@@ -167,13 +167,21 @@ var ShoutBox = {
 	postImageShout: function(url){
 		var request = { imageUrl: url };
 		
-		// TODO: Error
 		$.post("xmlhttp.php?action=mysb_add_image_shout", request)
 			.done(function(data){
 				ShoutBox.emptyMessageBox();
 				ShoutBox.indicateShoutPostingFinished();
-			}
-		);
+				ShoutBox.getShouts();
+			})
+			.error(function(response){
+				// TODO: Generate error messages clientside
+				if(response.responseJSON != null){
+					var errorMessage = response.responseJSON.message;
+					ShoutBox.alert(errorMessage);
+				}
+
+				ShoutBox.indicateShoutPostingFinished();
+			});
 	},
 	
 	postTextShout: function(message){
@@ -601,6 +609,5 @@ var ShoutBox = {
 		$("#shouting-status").removeAttr("disabled");
 		ShoutBox.resizeMessageBoxToFitContents();
 		ShoutBox.shouting = false;
-		ShoutBox.getShouts();
 	}
 };

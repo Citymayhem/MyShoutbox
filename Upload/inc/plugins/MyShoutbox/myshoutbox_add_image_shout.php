@@ -42,6 +42,7 @@ function PerformHeadRequest($url){
 	return $response;
 }
 
+// TODO: Generate error messages clientside
 function myshoutbox_add_image_shout($url)
 {	
 	global $db, $mybb;
