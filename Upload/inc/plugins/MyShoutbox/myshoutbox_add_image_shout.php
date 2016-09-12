@@ -1,21 +1,6 @@
 <?php
 if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
-
-function myshoutbox_IsUserAllowedByFloodProtectionToPost($userId){
-	global $db, $mybb;
-	
-	if (intval($mybb->settings['mysb_flood_time']) && mysb_obey_cooldown()) {
-		$lastShout = $db->fetch_field($db->simple_select('mysb_shouts', 'MAX(shout_date) as lastShout', "uid = $userId", 'lastShout'));
-		$interval = time() - $lastShout;
-		
-		if ($interval <= $mybb->settings['mysb_flood_time'])
-			return false;
-	}
-	
-	return true;
-}
-
 class HeadRequestResponse {
 	public $StatusCode;
 	public $ContentLength;
@@ -55,16 +40,16 @@ function myshoutbox_add_image_shout($url)
 	global $db, $mybb;
 	
 	$perms = myshoutbox_can_view();
+	$userIsGuest = $mybb->user['usergroup'] == 1 || $mybb->user['uid'] < 1 || !$perms;
+	$userIsBanned = $perms === 2;
 
-	// guests not allowed! neither banned users
-	if (!$perms || $perms === 2 || $mybb->user['usergroup'] == 1 || $mybb->user['uid'] < 1)
+	if ($userIsGuest || $userIsBanned)
 	{
 		UnauthorisedResponse();
 	}
 	
-	$userId = intval($mybb->user['uid']);
-	
-	if(!myshoutbox_IsUserAllowedByFloodProtectionToPost($userId)){
+	if(MyShoutboxFloodProtection::IsUserAllowedToPost($mybb->user) === false)
+	{
 		BadRequestResponse(AddImageShoutError::FloodProtection);
 	}
 	
@@ -75,22 +60,24 @@ function myshoutbox_add_image_shout($url)
 	
 	$headResponse = PerformHeadRequest($url);
 	
-	if($headResponse->StatusCode != 200){
+	if($headResponse->StatusCode != 200)
+	{
 		BadRequestResponse(AddImageShoutError::CouldNotRetrieveImage);
 	}
 	
 	$contentType = $headResponse->ContentType;
-	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png"){
+	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png")
+	{
 		BadRequestResponse(AddImageShoutError::InvalidFileType);
 	}
 	
-	if($headResponse->ContentLength > 1048576){
-		// TODO: Replace with a thumbnail of the image if it's a reasonable size
+	if($headResponse->ContentLength > 1048576)
+	{
 		BadRequestResponse(AddImageShoutError::ImageFileSizeTooBig);
 	}
 	
 	$shout_data = array(
-		'uid' => $userId,
+		'uid' => intval($mybb->user['uid']),
 		'shout_msg' => $url,
 		'shout_date' => time(),
 		'shout_ip' => get_ip(),
