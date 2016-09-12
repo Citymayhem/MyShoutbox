@@ -17,7 +17,7 @@ var ShoutBox = {
 	totalEntries: 0,
 	firstRun: true,
 	MaxEntries: 5,
-	DataStore: new Array(),
+	Shouts: new Array(),
 	shouting: false,
 	orderShoutboxDesc: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
@@ -52,63 +52,35 @@ var ShoutBox = {
 		});
 	},
 	
-
-	showShouts: function() {
-		setTimeout("ShoutBox.showShouts();", ShoutBox.refreshInterval * 1000);
+	getShouts: function() {
 		/*
 		if (typeof Ajax == 'object') {
 			new Ajax.Request('xmlhttp.php?action=show_shouts&last_id='+ShoutBox.lastID, {method: 'get', onComplete: function(request) { ShoutBox.shoutsLoaded(request); } });
 		}
 		*/		
-		$.get("xmlhttp.php?action=show_shouts&last_id="+ShoutBox.lastID, function(data){
-			ShoutBox.shoutsLoaded(data);
+		$.get("xmlhttp.php?action=get_shouts&last_id="+ShoutBox.lastID, function(data){
+			ShoutBox.shoutsRetrieved(data);
+		}).always(function(){
+			setTimeout("ShoutBox.getShouts();", ShoutBox.refreshInterval * 1000);
 		});
 	},
-
-	shoutsLoaded: function(responseData) {
-		
-		var theHTML = "";
-		var curData = "";
-		var data = responseData.split('^--^');
-		var lastID = parseInt(data[0]);
-		var theEntries = parseInt(data[1]);
-		var lastEntryIsEmpty = false;
+	
+	shoutsRetrieved: function(response) {
+		var lastID = response.lastShoutId;
+		var messages = response.messages;
 
 		if (lastID <= ShoutBox.lastID) {
 			return;
 		}
 
-		// add to data store now...
-		curData = data[2].split("\r\n");
-		
-		
-		if(curData[curData.length - 1] === ""){
-			lastEntryIsEmpty = true;
-		}
+		var numberOfShouts = messages.length;
 
-		var numberOfShouts = lastEntryIsEmpty ? curData.length - 1 : curData.length;
-		// only 1 message?
-		if (numberOfShouts == 1) 
+		for (var i = numberOfShouts - 1; i >= 0; i--) 
 		{
-			length = ShoutBox.DataStore.length;
-			ShoutBox.DataStore[ length ] = curData[0];
-		} 
-		else 
-		{
-			// hush, lots of em
-			var collectData = "";
-			var length = 0;
-			for (var i = numberOfShouts; i >= 0; i--) 
-			{
-				if (curData[i] != "" && curData[i] != undefined) {
-					length = ShoutBox.DataStore.length;
-					ShoutBox.DataStore[ length ] = curData[i];
-				}	
-			}
+			ShoutBox.Shouts.push(messages[i]);
 		}
 
 		ShoutBox.lastID = lastID;
-		ShoutBox.totalEntries += theEntries;
 
 		var shouldScrollToBottom = ShoutBox.firstRun && !ShoutBox.orderShoutboxDesc;
 		if (ShoutBox.firstRun) {
@@ -179,7 +151,7 @@ var ShoutBox = {
 		$("#shouting-status").removeAttr("disabled");
 		ShoutBox.resizeMessageBoxToFitContents();
 		ShoutBox.shouting = false;
-		ShoutBox.showShouts();
+		ShoutBox.getShouts();
 	},
 	
 	// report shout
@@ -254,9 +226,9 @@ var ShoutBox = {
 		id = parseInt(id);
 
 		if (type == 1) {
-			ShoutBox.DataStore = new Array();
+			ShoutBox.Shouts = new Array();
 			ShoutBox.lastID = 0;
-			ShoutBox.showShouts();
+			ShoutBox.getShouts();
 		} else {
 			// Hide the hide button, show the recover button and HIDDEN message
 			$("#shout-hide-"+id).css("display", "none");
@@ -297,9 +269,9 @@ var ShoutBox = {
 		id = parseInt(id);
 
 		if (type == 1) {
-			ShoutBox.DataStore = new Array();
+			ShoutBox.Shouts = new Array();
 			ShoutBox.lastID = 0;
-			ShoutBox.showShouts();
+			ShoutBox.getShouts();
 		} else {
 			$("#shout-"+id).css("display","none");
 		}
@@ -331,9 +303,9 @@ var ShoutBox = {
 		id = parseInt(id);
 
 		if (type == 1) {
-			ShoutBox.DataStore = new Array();
+			ShoutBox.Shouts = new Array();
 			ShoutBox.lastID = 0;
-			ShoutBox.showShouts();
+			ShoutBox.getShouts();
 		} else {
 			// Show the hide button, hide the recover button and HIDDEN message
 			$("#shout-hide-"+id).css("display","inline");
@@ -419,16 +391,23 @@ var ShoutBox = {
 	},
 	
 	renderMessages: function() {
-		var output = "";
+		var messages = new Array();
 		
-		for (var i = 0; i < ShoutBox.DataStore.length; i++) {
+		for (var i = 0; i < ShoutBox.Shouts.length; i++) {
+			var shout = ShoutBox.Shouts[i];
+			
+			messages.push(ShoutBox.renderShout(shout));
+		}
+		
+		var output = "";
+		messages.forEach(function(message) {
 			if(ShoutBox.orderShoutboxDesc){
-				output = ShoutBox.DataStore[i] + output;
+				output = message + output;
 			}
 			else {
-				output = output + ShoutBox.DataStore[i];
+				output = output + message;
 			}
-		}
+		});
 		
 		$("#shoutbox_data").html(output);
 		
@@ -440,6 +419,16 @@ var ShoutBox = {
 		}
 	},
 	
+	renderShout: function(shout){
+		return ShoutBox.shoutMessageFormat
+						.replace(new RegExp("{{datetime}}", 'g'), moment.unix(shout.dateTime).format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
+						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
+						.replace(new RegExp("{{uid}}", 'g'), shout.userId)
+						.replace(new RegExp("{{shoutId}}", 'g'), shout.id)
+						.replace(new RegExp("{{message}}", 'g'), shout.message);
+	},
+	
 	renderReverseOrderButton: function(){
 		if(ShoutBox.orderShoutboxDesc){
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-down\"></i>");
@@ -449,5 +438,28 @@ var ShoutBox = {
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-up\"></i>");
 			$("#shout-reverse-button").attr("title", ShoutBox.getLanguageValue("mysb_reverse_shout_order_to_desc"));
 		}
-	}
+	},
+	
+	shoutMessageFormat: "<div class=\"shout\">\
+	<div class=\"shout-author\">\
+		<a title=\"{{datetime}}\" href=\"http://citymayhem.net/user-2642.html\">\
+			<img class=\"shout-author-avatar\" src=\"{{avatarUrl}}\" \>\
+		</a>\
+	</div>\
+	<div class=\"shout-content\">\
+		<div class=\"shout-content-header\">\
+			<div class=\"shout-author-name\">\
+				{{formattedName}}\
+			</div>\
+			<span>{{datetime}}</span>\
+			<div class=\"shout-links\">\
+				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.pvtAdd({{uid}});\" title=\"Private Message\"><i class=\"fa fa-envelope-o\"></i></a>\
+				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.promptReason({{shoutId}});\" title=\"Report\"><i class=\"fa fa-flag\"></i></a>\
+			</div>\
+		</div>\
+		<div class=\"shout-body\">\
+			<div class=\"shout-body-text\">{{message}}</div>\
+		</div>\
+	</div>\
+</div>"
 };
