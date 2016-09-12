@@ -401,6 +401,10 @@ function myshoutbox_load()
 			myshoutbox_add_shout();
 		break;
 		
+		case 'mysb_add_image_shout':
+			myshoutbox_add_image_shout($mybb->input['imageUrl']);
+		break;
+		
 		case 'delete_shout':
 			myshoutbox_delete_shout(intval($mybb->input['id']));
 		break;
@@ -860,7 +864,8 @@ function myshoutbox_add_shout()
 			'shout_msg' => $shout_msg,
 			'shout_date' => time(),
 			'shout_ip' => get_ip(),
-			'hidden' => "no"
+			'hidden' => "no",
+			'type' => ShoutboxShoutType::Text
 		);
 		
 	if ($db->insert_query('mysb_shouts', $shout_data)) {

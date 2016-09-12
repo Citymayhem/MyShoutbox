@@ -60,6 +60,10 @@ var ShoutBox = {
 		});
 	},
 	
+	startRefreshTimer: function(){
+		setTimeout(function() { ShoutBox.getShouts(ShoutBox.startRefreshTimer); }, ShoutBox.refreshInterval * 1000);
+	},
+	
 	load: function(){
 		$.get("xmlhttp.php?action=mysb_get_templates", function(data){
 			ShoutBox.hideAlert();
@@ -67,14 +71,14 @@ var ShoutBox = {
 			
 			ShoutBox.renderStructure();
 			
-			ShoutBox.getShouts();
+			ShoutBox.getShouts(ShoutBox.startRefreshTimer);
 		}).error(function(){
 			ShoutBox.alert("Error loading shoutbox. Trying again...", -1);
 			setTimeout(ShoutBox.load, 3000);
 		});
 	},
 	
-	getShouts: function() {
+	getShouts: function(finishedCallback=null) {
 		/*
 		if (typeof Ajax == 'object') {
 			new Ajax.Request('xmlhttp.php?action=show_shouts&last_id='+ShoutBox.lastID, {method: 'get', onComplete: function(request) { ShoutBox.shoutsLoaded(request); } });
@@ -83,7 +87,9 @@ var ShoutBox = {
 		$.get("xmlhttp.php?action=get_shouts&last_id="+ShoutBox.lastID, function(data){
 			ShoutBox.shoutsRetrieved(data);
 		}).always(function(){
-			setTimeout("ShoutBox.getShouts();", ShoutBox.refreshInterval * 1000);
+			if(finishedCallback != null){
+				finishedCallback();
+			}
 		});
 	},
 	
@@ -150,12 +156,33 @@ var ShoutBox = {
 		$("#shouting-status").attr("disabled", "disabled");
 		ShoutBox.shouting = true;
 
+		if(ShoutBox.SelectedMessageType == ShoutboxMessageTypes.Image){
+			ShoutBox.postImageShout(message);
+		}
+		else {
+			ShoutBox.postTextShout(message);
+		}
+	},
+	
+	postImageShout: function(url){
+		var request = { imageUrl: url };
+		
+		// TODO: Error
+		$.post("xmlhttp.php?action=mysb_add_image_shout", request)
+			.done(function(data){
+				ShoutBox.emptyMessageBox();
+				ShoutBox.indicateShoutPostingFinished();
+			}
+		);
+	},
+	
+	postTextShout: function(message){
 		postData = "shout_data="+encodeURIComponent(message).replace(/\+/g, "%2B");
-		//new Ajax.Request('xmlhttp.php?action=add_shout', {method: 'post', postBody: postData, onComplete: function(request) { ShoutBox.postedShout(request, message); }});
 		$.post("xmlhttp.php?action=add_shout", postData)
 			.done(function(data){
 				ShoutBox.postedShout(data, message);
-			});
+			}
+		);
 	},
 
 	postedShout: function(responseData, message) {
@@ -562,5 +589,18 @@ var ShoutBox = {
 
 	selectMessageType: function(type) {
 		ShoutBox.SelectedMessageType = type;
+	},
+	
+	emptyMessageBox: function(){
+		$("#shout_data").val("");
+	},
+	
+	indicateShoutPostingFinished: function(){
+		$("#shouting-status").html(ShoutBox.lang[1]);
+		$("#shout_data").removeAttr("disabled");
+		$("#shouting-status").removeAttr("disabled");
+		ShoutBox.resizeMessageBoxToFitContents();
+		ShoutBox.shouting = false;
+		ShoutBox.getShouts();
 	}
 };

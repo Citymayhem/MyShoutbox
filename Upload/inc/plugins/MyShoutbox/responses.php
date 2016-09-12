@@ -19,6 +19,11 @@ function NotFoundResponse(){
 	exit;
 }
 
+function OkResponse(){
+	http_response_code(200);
+	exit;
+}
+
 function OkResponseWithObject($responseObject){
 	http_response_code(200);
 	header('Content-Type: application/json');
