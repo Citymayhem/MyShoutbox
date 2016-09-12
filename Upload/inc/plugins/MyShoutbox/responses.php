@@ -1,8 +1,4 @@
 <?php
-function UnauthorisedResponse(){
-	http_response_code(401);
-	exit;
-}
 
 function BadRequestResponse($message){
 	http_response_code(400);
@@ -10,6 +6,16 @@ function BadRequestResponse($message){
 	$response = new StdClass();
 	$response->message = $message;
 	echo json_encode($response);
+	exit;
+}
+
+function UnauthorisedResponse(){
+	http_response_code(401);
+	exit;
+}
+
+function NotFoundResponse(){
+	http_response_code(404);
 	exit;
 }
 

@@ -22,6 +22,7 @@ var ShoutBox = {
 	orderShoutboxDesc: false,
 	lang: ['Shouting...', 'Shout Now!', 'Loading...', 'Flood check! Please try again in <interval> seconds.', 'Couldn\'t shout or perform action. Please try again!', 'Sending message...', 'Send!'],
 	newLang: {},
+	Templates: {},
 	ActiveUserId: 0,
 	
 	getLanguageValue: function(key){
@@ -53,6 +54,20 @@ var ShoutBox = {
 		});
 	},
 	
+	load: function(){
+		$.get("xmlhttp.php?action=mysb_get_templates", function(data){
+			ShoutBox.hideAlert();
+			ShoutBox.Templates = data;
+			
+			ShoutBox.renderStructure();
+			
+			ShoutBox.getShouts();
+		}).error(function(){
+			ShoutBox.alert("Error loading shoutbox. Trying again...", -1);
+			setTimeout(ShoutBox.load, 3000);
+		});
+	},
+	
 	getShouts: function() {
 		/*
 		if (typeof Ajax == 'object') {
@@ -80,15 +95,25 @@ var ShoutBox = {
 
 		for (var i = numberOfShouts - 1; i >= 0; i--) 
 		{
-			ShoutBox.Shouts.push(messages[i]);
+			var currentShout = messages[i];
+			var shoutMessageViewModel = ShoutBox.buildShoutMessageViewModel(currentShout);
+			
+			if(ShoutBox.Shouts.length != 0){
+				var previousEntryViewModel = ShoutBox.Shouts[ShoutBox.Shouts.length - 1];
+				
+				if(ShoutBox.shouldMergeShouts(previousEntryViewModel, currentShout)){
+					previousEntryViewModel.messages.push(shoutMessageViewModel);
+					continue;
+				}
+			}
+			
+			var shoutViewModel = ShoutBox.buildShoutViewModel(currentShout, shoutMessageViewModel);
+			ShoutBox.Shouts.push(shoutViewModel);
 		}
 
 		ShoutBox.lastID = lastID;
 
 		var shouldScrollToBottom = ShoutBox.firstRun && !ShoutBox.orderShoutboxDesc;
-		if (ShoutBox.firstRun) {
-			ShoutBox.renderStructure();
-		}
 		
 		ShoutBox.renderShoutbox();
 		
@@ -322,10 +347,16 @@ var ShoutBox = {
 		$("#shouting-status").attr("disabled","disabled");
 	},
 	
-	alert: function(msg) {
-		$("#shoutbox-alert").css("display","table-row");
+	alert: function(msg, hideAfterInMs=5000) {
+		$("#shoutbox-alert").css("display","block");
 		$("#shoutbox-alert-contents").html(msg);
-		setTimeout(function(){$("#shoutbox-alert").css("display","none");}, 5000);
+		
+		if(hideAfterInMs != -1)
+			setTimeout(function(){ShoutBox.hideAlert();}, hideAfterInMs);
+	},
+	
+	hideAlert: function(){
+		$("#shoutbox-alert").css("display","none");
 	},
 	
 	resizeMessageBoxToFitContents: function(){
@@ -431,15 +462,30 @@ var ShoutBox = {
 						: "PM to " + shout.pmTargetUsername;
 		}
 		
+		var pmButton = "";
+		if(shout.userId != ShoutBox.ActiveUserId){
+			pmButton = ShoutBox.renderPmButton(shout.userId);
+		}
 		
-		return ShoutBox.shoutMessageFormat
+		var messages = "";
+		shout.messages.forEach(function(message) {
+			messages += ShoutBox.Templates['mysb_shout_message_text']
+								.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+								.replace(new RegExp("{{message}}", 'g'), message.content);
+		});
+		
+		
+		return ShoutBox.Templates['mysb_shout']
 						.replace(new RegExp("{{pmMessage}}", 'g'), pmMessage)
-						.replace(new RegExp("{{datetime}}", 'g'), moment.unix(shout.dateTime).format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{pmButton}}", 'g'), pmButton)
+						.replace(new RegExp("{{datetime}}", 'g'), shout.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{avatarUrl}}", 'g'), shout.avatarUrl)
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
-						.replace(new RegExp("{{uid}}", 'g'), shout.userId)
-						.replace(new RegExp("{{shoutId}}", 'g'), shout.id)
-						.replace(new RegExp("{{message}}", 'g'), shout.message);
+						.replace(new RegExp("{{messages}}", 'g'), messages);
+	},
+	
+	renderPmButton: function(userId) {
+		return ShoutBox.Templates['mysb_shout_button_pm'].replace(new RegExp("{{uid}}", 'g'), userId);
 	},
 	
 	renderReverseOrderButton: function(){
@@ -453,27 +499,41 @@ var ShoutBox = {
 		}
 	},
 	
-	shoutMessageFormat: "<div class=\"shout\">\
-	<div class=\"shout-author\">\
-		<a title=\"{{datetime}}\" href=\"http://citymayhem.net/user-2642.html\">\
-			<img class=\"shout-author-avatar\" src=\"{{avatarUrl}}\" \>\
-		</a>\
-	</div>\
-	<div class=\"shout-content\">\
-		<div class=\"shout-content-header\">\
-			<div class=\"shout-author-name\">\
-				{{formattedName}}\
-			</div>\
-			<span>{{datetime}}</span>\
-			<div class=\"shout-links\">\
-				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.pvtAdd({{uid}});\" title=\"Private Message\"><i class=\"fa fa-envelope-o\"></i></a>\
-				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.promptReason({{shoutId}});\" title=\"Report\"><i class=\"fa fa-flag\"></i></a>\
-			</div>\
-			<div class=\"shout-pm-message\">{{pmMessage}}</div>\
-		</div>\
-		<div class=\"shout-body\">\
-			<div class=\"shout-body-text\">{{message}}</div>\
-		</div>\
-	</div>\
-</div>"
+	shouldMergeShouts: function(previousShoutViewModel, shout) {
+		if(shout.userId != previousShoutViewModel.userId)
+			return false;
+		
+		if(shout.pmTargetUserId != previousShoutViewModel.pmTargetUserId)
+			return false;
+		
+		var timeDifferenceInHours = moment.unix(shout.dateTime).diff(previousShoutViewModel.dateTime, 'hours')
+		
+		if(timeDifferenceInHours > 1)
+			return false;
+		
+		return true;
+	},
+	
+	buildShoutViewModel: function(shout, shoutMessageViewModel){
+		return {
+			userId: shout.userId,
+			avatarUrl: shout.avatarUrl,
+			dateTime: shoutMessageViewModel.dateTime,
+			formattedUsername: shout.formattedUsername,
+			isPm: shout.isPm,
+			pmTargetUserId: shout.pmTargetUserId,
+			pmTargetUsername: shout.pmTargetUsername,
+			messages: new Array(shoutMessageViewModel)
+		};
+	},
+	
+	buildShoutMessageViewModel: function(shout){
+		return {
+			id: shout.id,
+			type: shout.type,
+			content: shout.message,
+			ip: shout.userIp,
+			dateTime: moment.unix(shout.dateTime)
+		};
+	},
 };
