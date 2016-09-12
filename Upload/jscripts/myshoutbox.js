@@ -17,7 +17,6 @@ var ShoutBox = {
 	totalEntries: 0,
 	firstRun: true,
 	MaxEntries: 5,
-	DataStore: new Array(),
 	Shouts: new Array(),
 	shouting: false,
 	orderShoutboxDesc: false,
@@ -227,7 +226,7 @@ var ShoutBox = {
 		id = parseInt(id);
 
 		if (type == 1) {
-			ShoutBox.DataStore = new Array();
+			ShoutBox.Shouts = new Array();
 			ShoutBox.lastID = 0;
 			ShoutBox.getShouts();
 		} else {
@@ -270,7 +269,7 @@ var ShoutBox = {
 		id = parseInt(id);
 
 		if (type == 1) {
-			ShoutBox.DataStore = new Array();
+			ShoutBox.Shouts = new Array();
 			ShoutBox.lastID = 0;
 			ShoutBox.getShouts();
 		} else {
@@ -304,7 +303,7 @@ var ShoutBox = {
 		id = parseInt(id);
 
 		if (type == 1) {
-			ShoutBox.DataStore = new Array();
+			ShoutBox.Shouts = new Array();
 			ShoutBox.lastID = 0;
 			ShoutBox.getShouts();
 		} else {
@@ -441,10 +440,7 @@ var ShoutBox = {
 		}
 	},
 	
-	shoutMessageFormat: "<!-- todo: Indicate if hidden/pm\
-			User Ip\
- -->\
-<div class=\"shout\">\
+	shoutMessageFormat: "<div class=\"shout\">\
 	<div class=\"shout-author\">\
 		<a title=\"{{datetime}}\" href=\"http://citymayhem.net/user-2642.html\">\
 			<img class=\"shout-author-avatar\" src=\"{{avatarUrl}}\" \>\
@@ -459,7 +455,6 @@ var ShoutBox = {
 			<div class=\"shout-links\">\
 				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.pvtAdd({{uid}});\" title=\"Private Message\"><i class=\"fa fa-envelope-o\"></i></a>\
 				<a href=\"javascript:void(0)\" onclick=\"ShoutBox.promptReason({{shoutId}});\" title=\"Report\"><i class=\"fa fa-flag\"></i></a>\
-				<!-- TODO: Delete, hide -->\
 			</div>\
 		</div>\
 		<div class=\"shout-body\">\
