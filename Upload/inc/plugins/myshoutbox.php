@@ -311,6 +311,7 @@ function myshoutbox_activate()
 	$mysb_shout = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout.html");
 	$mysb_shout_message_text = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_message_text.html");
 	$mysb_shout_button_pm = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_button_pm.html");
+	$mysb_shout_message_image = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_message_image.html");
 	
 	// insert templates
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox', 'sid' => '-1', 'template' => $db->escape_string($mysb_shoutbox_tpl), 'version' => '1411', 'status' => '', 'dateline' => TIME_NOW));
@@ -320,6 +321,7 @@ function myshoutbox_activate()
 	$db->insert_query('templates', array('title' => 'mysb_shout', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shout_message_text', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_text), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shout_button_pm', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_button_pm), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
+	$db->insert_query('templates', array('title' => 'mysb_shout_message_image', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_image), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 	

@@ -14,8 +14,11 @@ function myshoutbox_get_templates(){
 	$response = new GetTemplatesResponse();
 	
 	$response->mysb_shout = stripcslashes($templates->get("mysb_shout"));
-	$response->mysb_shout_message_text = stripcslashes($templates->get("mysb_shout_message_text"));
+	
 	$response->mysb_shout_button_pm = stripcslashes($templates->get("mysb_shout_button_pm"));
+	
+	$response->mysb_shout_message_text = stripcslashes($templates->get("mysb_shout_message_text"));
+	$response->mysb_shout_message_image = stripcslashes($templates->get("mysb_shout_message_image"));
 	
 	OkResponseWithObject($response);
 }
