@@ -1198,7 +1198,7 @@ function myshoutbox_get_shouts($last_id = 0)
 	
 	$query = $db->write_query("SELECT s.*, u.username, u.usergroup, u.displaygroup, u.avatar FROM ".TABLE_PREFIX."mysb_shouts s 
 							LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid = s.uid) 
-						WHERE s.id > {$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . " %') 
+						WHERE s.id > {$last_id} AND (s.uid = " . $mybb->user['uid'] . " OR s.shout_msg NOT LIKE '/pvt%' OR s.shout_msg LIKE '/pvt " . $mybb->user['uid'] . " %') AND s.hidden = 'no' 
 						ORDER by s.id DESC LIMIT {$mybb->settings['mysb_shouts_main']}");
 	
 	// fetch results
