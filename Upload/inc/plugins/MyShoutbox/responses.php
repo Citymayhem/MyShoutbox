@@ -1,5 +1,17 @@
 <?php
 
+function OkResponse(){
+	http_response_code(200);
+	exit;
+}
+
+function OkResponseWithObject($responseObject){
+	http_response_code(200);
+	header('Content-Type: application/json');
+	echo json_encode($responseObject);
+	exit;
+}
+
 function BadRequestResponse($message){
 	http_response_code(400);
 	header('Content-Type: application/json');
@@ -19,10 +31,8 @@ function NotFoundResponse(){
 	exit;
 }
 
-function OkResponseWithObject($responseObject){
-	http_response_code(200);
-	header('Content-Type: application/json');
-	echo json_encode($responseObject);
+function InternalServerErrorResponse(){
+	http_response_code(500);
 	exit;
 }
 ?>

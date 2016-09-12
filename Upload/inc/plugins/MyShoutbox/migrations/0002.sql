@@ -1,0 +1,5 @@
+ALTER TABLE {MYBB_TABLE_PREFIX}mysb_shouts ADD `type` SMALLINT(1) UNSIGNED NOT NULL;
+
+UPDATE {MYBB_TABLE_PREFIX}mysb_shouts SET `type` = 1;
+
+INSERT INTO {MYBB_TABLE_PREFIX}mysb_version(`Version`, `DateTime`) VALUES (2, UTC_TIMESTAMP());

@@ -72,12 +72,18 @@ function myshoutbox_get_shouts($last_id = 0)
 	while ($row = $db->fetch_array($query))
 	{
 		$shout = new ShoutboxShout();
+		$shout->type = $row['type'];
 		
 		$shoutId = $row['id'];
 		$shoutUserId = $row['uid'];
 		$shoutUsername = $row['username'];
 		
-		$message = myshoutbox_parse_message($parser, $row['shout_msg'], $shoutUsername);
+		if($shout->type == ShoutboxShoutType::Text){
+			$message = myshoutbox_parse_message($parser, $row['shout_msg'], $shoutUsername);
+		}
+		else {
+			$message = $row['shout_msg'];
+		}
 		
 		$shout->isHidden = $row['hidden'] == "yes";
 		
@@ -119,7 +125,6 @@ function myshoutbox_get_shouts($last_id = 0)
 		
 		array_push($response->messages, $shout);
 		$shout->id = $shoutId;
-		$shout->type = ShoutboxShoutType::Text;
 		$shout->message = $message;
 		$shout->userId = $shoutUserId;
 		

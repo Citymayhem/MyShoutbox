@@ -10,6 +10,27 @@
 // 
 //
 //
+var ShoutboxMessageTypes = {
+	Text: 1,
+	Image: 2
+};
+
+var AddImageShoutErrorMessage = {
+	add_image_shout_error_floodProtection: "Please slow down. You are posting too quickly.",
+	add_image_shout_error_invalid_image_url: "That image URL does not look correct.",
+	add_image_shout_error_could_not_retrieve_image: "There was an error retrieving the image (maybe it's private access?). Please check your URL.",
+	add_image_shout_error_invalid_file_type: "The image must be JPEG, PNG or GIF.",
+	add_image_shout_error_image_file_size_too_big: "The image must be 10MB or less."
+};
+
+var AddImageShoutError = {
+	FloodProtection: "add_image_shout_error_floodProtection",
+	InvalidImageUrl: "add_image_shout_error_invalid_image_url",
+	CouldNotRetrieveImage: "add_image_shout_error_could_not_retrieve_image",
+	InvalidFileType: "add_image_shout_error_invalid_file_type",
+	ImageFileSizeTooBig: "add_image_shout_error_image_file_size_too_big"
+};
+
 var ShoutBox = {
 	
 	refreshInterval: 60,
@@ -24,6 +45,7 @@ var ShoutBox = {
 	newLang: {},
 	Templates: {},
 	ActiveUserId: 0,
+	SelectedMessageType: ShoutboxMessageTypes.Text,
 	
 	getLanguageValue: function(key){
 		var languageValue = ShoutBox.newLang[key];
@@ -54,6 +76,10 @@ var ShoutBox = {
 		});
 	},
 	
+	startRefreshTimer: function(){
+		setTimeout(function() { ShoutBox.getShouts(ShoutBox.startRefreshTimer); }, ShoutBox.refreshInterval * 1000);
+	},
+	
 	load: function(){
 		$.get("xmlhttp.php?action=mysb_get_templates", function(data){
 			ShoutBox.hideAlert();
@@ -61,14 +87,14 @@ var ShoutBox = {
 			
 			ShoutBox.renderStructure();
 			
-			ShoutBox.getShouts();
+			ShoutBox.getShouts(ShoutBox.startRefreshTimer);
 		}).error(function(){
 			ShoutBox.alert("Error loading shoutbox. Trying again...", -1);
 			setTimeout(ShoutBox.load, 3000);
 		});
 	},
 	
-	getShouts: function() {
+	getShouts: function(finishedCallback=null) {
 		/*
 		if (typeof Ajax == 'object') {
 			new Ajax.Request('xmlhttp.php?action=show_shouts&last_id='+ShoutBox.lastID, {method: 'get', onComplete: function(request) { ShoutBox.shoutsLoaded(request); } });
@@ -77,7 +103,9 @@ var ShoutBox = {
 		$.get("xmlhttp.php?action=get_shouts&last_id="+ShoutBox.lastID, function(data){
 			ShoutBox.shoutsRetrieved(data);
 		}).always(function(){
-			setTimeout("ShoutBox.getShouts();", ShoutBox.refreshInterval * 1000);
+			if(finishedCallback != null){
+				finishedCallback();
+			}
 		});
 	},
 	
@@ -144,12 +172,40 @@ var ShoutBox = {
 		$("#shouting-status").attr("disabled", "disabled");
 		ShoutBox.shouting = true;
 
+		if(ShoutBox.SelectedMessageType == ShoutboxMessageTypes.Image){
+			ShoutBox.postImageShout(message);
+		}
+		else {
+			ShoutBox.postTextShout(message);
+		}
+	},
+	
+	postImageShout: function(url){
+		var request = { imageUrl: url };
+		
+		$.post("xmlhttp.php?action=mysb_add_image_shout", request)
+			.done(function(data){
+				ShoutBox.emptyMessageBox();
+				ShoutBox.indicateShoutPostingFinished();
+				ShoutBox.getShouts();
+			})
+			.error(function(response){
+				if(response.responseJSON != null){
+					var errorCode = response.responseJSON.message;
+					ShoutBox.alert(AddImageShoutErrorMessage[errorCode]);
+				}
+
+				ShoutBox.indicateShoutPostingFinished();
+			});
+	},
+	
+	postTextShout: function(message){
 		postData = "shout_data="+encodeURIComponent(message).replace(/\+/g, "%2B");
-		//new Ajax.Request('xmlhttp.php?action=add_shout', {method: 'post', postBody: postData, onComplete: function(request) { ShoutBox.postedShout(request, message); }});
 		$.post("xmlhttp.php?action=add_shout", postData)
 			.done(function(data){
 				ShoutBox.postedShout(data, message);
-			});
+			}
+		);
 	},
 
 	postedShout: function(responseData, message) {
@@ -348,15 +404,15 @@ var ShoutBox = {
 	},
 	
 	alert: function(msg, hideAfterInMs=5000) {
-		$("#shoutbox-alert").css("display","block");
 		$("#shoutbox-alert-contents").html(msg);
+		$("#shoutbox-alert").slideToggle();
 		
 		if(hideAfterInMs != -1)
 			setTimeout(function(){ShoutBox.hideAlert();}, hideAfterInMs);
 	},
 	
 	hideAlert: function(){
-		$("#shoutbox-alert").css("display","none");
+		$("#shoutbox-alert").slideUp();
 	},
 	
 	resizeMessageBoxToFitContents: function(){
@@ -469,9 +525,14 @@ var ShoutBox = {
 		
 		var messages = "";
 		shout.messages.forEach(function(message) {
-			messages += ShoutBox.Templates['mysb_shout_message_text']
-								.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
-								.replace(new RegExp("{{message}}", 'g'), message.content);
+			switch(message.type){
+				case 1:
+					messages += ShoutBox.renderTextMessage(message);
+					break;
+				case 2:
+					messages += ShoutBox.renderImageMessage(message);
+					break;
+			}
 		});
 		
 		
@@ -483,11 +544,23 @@ var ShoutBox = {
 						.replace(new RegExp("{{formattedName}}", 'g'), shout.formattedUsername)
 						.replace(new RegExp("{{messages}}", 'g'), messages);
 	},
-	
+
+	renderTextMessage: function(message){
+		return ShoutBox.Templates['mysb_shout_message_text']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{message}}", 'g'), message.content);
+	},
+
+	renderImageMessage: function(message){
+		return ShoutBox.Templates['mysb_shout_message_image']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{image_src}}", 'g'), message.content);
+	},
+
 	renderPmButton: function(userId) {
 		return ShoutBox.Templates['mysb_shout_button_pm'].replace(new RegExp("{{uid}}", 'g'), userId);
 	},
-	
+
 	renderReverseOrderButton: function(){
 		if(ShoutBox.orderShoutboxDesc){
 			$("#shout-reverse-button").html("<i class=\"fa fa-arrow-down\"></i>");
@@ -530,10 +603,26 @@ var ShoutBox = {
 	buildShoutMessageViewModel: function(shout){
 		return {
 			id: shout.id,
-			type: shout.type,
+			type: parseInt(shout.type),
 			content: shout.message,
 			ip: shout.userIp,
 			dateTime: moment.unix(shout.dateTime)
 		};
 	},
+
+	selectMessageType: function(type) {
+		ShoutBox.SelectedMessageType = type;
+	},
+	
+	emptyMessageBox: function(){
+		$("#shout_data").val("");
+	},
+	
+	indicateShoutPostingFinished: function(){
+		$("#shouting-status").html(ShoutBox.lang[1]);
+		$("#shout_data").removeAttr("disabled");
+		$("#shouting-status").removeAttr("disabled");
+		ShoutBox.resizeMessageBoxToFitContents();
+		ShoutBox.shouting = false;
+	}
 };
