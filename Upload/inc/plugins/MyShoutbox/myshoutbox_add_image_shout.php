@@ -58,6 +58,8 @@ function myshoutbox_add_image_shout($url)
 		BadRequestResponse(AddImageShoutError::InvalidImageUrl);
 	}
 	
+	$url = trim($url);
+	
 	$headResponse = PerformHeadRequest($url);
 	
 	if($headResponse->StatusCode != 200)

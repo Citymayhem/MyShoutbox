@@ -12,7 +12,8 @@
 //
 var ShoutboxMessageTypes = {
 	Text: 1,
-	Image: 2
+	Image: 2,
+	Video: 3
 };
 
 var AddImageShoutErrorMessage = {
@@ -532,8 +533,17 @@ var ShoutBox = {
 				case 2:
 					messages += ShoutBox.renderImageMessage(message);
 					break;
+				case 3: 
+					messages += ShoutBox.renderVideoMessage(message);
+					break;
+				default:
+					break;
 			}
 		});
+		
+		if(messages == ""){
+			return "";
+		}
 		
 		
 		return ShoutBox.Templates['mysb_shout']
@@ -555,6 +565,12 @@ var ShoutBox = {
 		return ShoutBox.Templates['mysb_shout_message_image']
 						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{image_src}}", 'g'), message.content);
+	},
+	
+	renderVideoMessage: function(message){
+		return ShoutBox.Templates['mysb_shout_message_video']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{videoUrl}}", 'g'), message.content);
 	},
 
 	renderPmButton: function(userId) {

@@ -243,6 +243,7 @@ li.shoutbox_color {
 			<span id="shout-message-types">
 				<i id="shout-message-type-text" class="fa fa-comment-o fa-2x active-type" title="Post a comment"></i>
 				<i id="shout-message-type-image" class="fa fa-picture-o fa-2x" title="Post an image"></i>
+				<i id="shout-message-type-video" class="fa fa-video-camera fa-2x" title="Post a video"></i>
 			</span>
 			<textarea id="shout_data" placeholder="{$lang->mysb_placeholder}" rows="1"></textarea>
 			<button id="shouting-status" class="button">{$lang->mysb_shoutnow}</button>
@@ -297,6 +298,14 @@ $(document).ready(function(){
 		$.each($("#shout-message-types>i"), function(){ $(this).removeClass("active-type"); } );
 		$(this).addClass("active-type");
 		$("#shout_data").attr("placeholder", "Enter an image url...")
+	});
+	
+	$("#shout-message-type-video").click(function(){
+		ShoutBox.selectMessageType(ShoutboxMessageTypes.Image);
+
+		$.each($("#shout-message-types>i"), function(){ $(this).removeClass("active-type"); } );
+		$(this).addClass("active-type");
+		$("#shout_data").attr("placeholder", "Enter a video url...")
 	});
 	
 	ShoutBox.load();
