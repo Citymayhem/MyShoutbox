@@ -10,22 +10,24 @@ Modifications made to the MyShoutbox plugin
 * Uses a textarea rather than a text input to enable spellcheckers and auto-capitalisation of the first letter in sentences on phones.
 * Shiny font-awesome icons for deleting/hiding/reporting
 * Style improvements
+* Supports images properly
 
 
-##Full Unicode Support (Emojis, etc.)##
+##When updating from the previous version of MyShoutbox##
+* Make sure you are on the latest version of the old MyShoutbox
+* 
 
-Edit inc/config.php
+##To Enable Full Unicode Support (Emojis, etc.)##
+
+Edit the file inc/config.php in your MyBB installation.
 
 Change<br>
 `$config['database']['encoding'] = 'utf8';`<br>
 To<br>
 `$config['database']['encoding'] = 'utf8mb4';`<br>
 
-###Existing Installation###
 
-Run the following SQL (replace <DATABASENAMEHERE> with your database name):
-```sql
-USE <DATABASENAMEHERE>;
-ALTER TABLE mybb_mysb_shouts CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci;
-ALTER TABLE mybb_mysb_shouts CHANGE COLUMN shout_msg shout_msg TEXT CHARACTER SET 'utf8mb4' NOT NULL;
-```
+###When Updating###
+1. Deactivate MyShoutbox
+2. Upload the latest version
+3. Activate MyShoutbox
