@@ -71,7 +71,7 @@ function myshoutbox_add_image_shout($url)
 		BadRequestResponse(AddImageShoutError::InvalidFileType);
 	}
 	
-	if($headResponse->ContentLength > 1048576)
+	if($headResponse->ContentLength > 10485760)
 	{
 		BadRequestResponse(AddImageShoutError::ImageFileSizeTooBig);
 	}
