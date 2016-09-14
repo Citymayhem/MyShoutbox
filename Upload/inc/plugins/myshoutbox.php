@@ -312,6 +312,7 @@ function myshoutbox_activate()
 	$mysb_shout_message_text = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_message_text.html");
 	$mysb_shout_button_pm = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_button_pm.html");
 	$mysb_shout_message_image = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_message_image.html");
+	$mysb_shout_message_video = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_message_video.html");
 	
 	// insert templates
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox', 'sid' => '-1', 'template' => $db->escape_string($mysb_shoutbox_tpl), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
@@ -322,6 +323,7 @@ function myshoutbox_activate()
 	$db->insert_query('templates', array('title' => 'mysb_shout_message_text', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_text), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shout_button_pm', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_button_pm), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shout_message_image', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_image), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
+	$db->insert_query('templates', array('title' => 'mysb_shout_message_video', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_video), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	// Don't forget to delete
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
@@ -367,7 +369,7 @@ function myshoutbox_is_installed()
 function myshoutbox_deactivate()
 {
 	global $db, $mybb;
-	$db->write_query("DELETE FROM ".TABLE_PREFIX."templates WHERE title IN('mysb_shoutbox','mysb_shoutbox_full','mysb_shoutbox_popup','mysb_shoutbox_popup_full','mysb_shoutbox_banned', 'mysb_shout', 'mysb_shout_message_text', 'mysb_shout_button_pm', 'mysb_shout_message_image') AND sid='-1'");
+	$db->write_query("DELETE FROM ".TABLE_PREFIX."templates WHERE title IN('mysb_shoutbox','mysb_shoutbox_full','mysb_shoutbox_popup','mysb_shoutbox_popup_full','mysb_shoutbox_banned', 'mysb_shout', 'mysb_shout_message_text', 'mysb_shout_button_pm', 'mysb_shout_message_image', 'mysb_shout_message_video') AND sid='-1'");
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 
@@ -404,7 +406,11 @@ function myshoutbox_load()
 		case 'mysb_add_image_shout':
 			myshoutbox_add_image_shout($mybb->input['imageUrl']);
 		break;
-		
+
+		case 'mysb_add_video_shout':
+			myshoutbox_add_video_shout($mybb->input['videoUrl']);
+		break;
+
 		case 'delete_shout':
 			myshoutbox_delete_shout(intval($mybb->input['id']));
 		break;

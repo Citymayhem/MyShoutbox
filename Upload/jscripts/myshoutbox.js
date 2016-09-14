@@ -12,7 +12,8 @@
 //
 var ShoutboxMessageTypes = {
 	Text: 1,
-	Image: 2
+	Image: 2,
+	Video: 3
 };
 
 var AddImageShoutErrorMessage = {
@@ -29,6 +30,16 @@ var AddImageShoutError = {
 	CouldNotRetrieveImage: "add_image_shout_error_could_not_retrieve_image",
 	InvalidFileType: "add_image_shout_error_invalid_file_type",
 	ImageFileSizeTooBig: "add_image_shout_error_image_file_size_too_big"
+};
+
+var AddVideoShoutErrorMessage = {
+	add_video_shout_error_flood_protection: "Please slow down. You are posting too quickly.",
+	add_video_shout_error_invalid_video_url: "That YouTube URL does not look correct.",
+};
+
+var AddVideoShoutError = {
+	FloodProtection: "add_video_shout_error_flood_protection",
+	InvalidVideoUrl: "add_video_shout_error_invalid_video_url"
 };
 
 var ShoutBox = {
@@ -175,6 +186,9 @@ var ShoutBox = {
 		if(ShoutBox.SelectedMessageType == ShoutboxMessageTypes.Image){
 			ShoutBox.postImageShout(message);
 		}
+		else if(ShoutBox.SelectedMessageType == ShoutboxMessageTypes.Video){
+			ShoutBox.postVideoShout(message);
+		}
 		else {
 			ShoutBox.postTextShout(message);
 		}
@@ -193,6 +207,25 @@ var ShoutBox = {
 				if(response.responseJSON != null){
 					var errorCode = response.responseJSON.message;
 					ShoutBox.alert(AddImageShoutErrorMessage[errorCode]);
+				}
+
+				ShoutBox.indicateShoutPostingFinished();
+			});
+	},
+	
+	postVideoShout: function(url){
+		var request = { videoUrl: url };
+		
+		$.post("xmlhttp.php?action=mysb_add_video_shout", request)
+			.done(function(data){
+				ShoutBox.emptyMessageBox();
+				ShoutBox.indicateShoutPostingFinished();
+				ShoutBox.getShouts();
+			})
+			.error(function(response){
+				if(response.responseJSON != null){
+					var errorCode = response.responseJSON.message;
+					ShoutBox.alert(AddVideoShoutErrorMessage[errorCode]);
 				}
 
 				ShoutBox.indicateShoutPostingFinished();
@@ -532,8 +565,17 @@ var ShoutBox = {
 				case 2:
 					messages += ShoutBox.renderImageMessage(message);
 					break;
+				case 3: 
+					messages += ShoutBox.renderVideoMessage(message);
+					break;
+				default:
+					break;
 			}
 		});
+		
+		if(messages == ""){
+			return "";
+		}
 		
 		
 		return ShoutBox.Templates['mysb_shout']
@@ -555,6 +597,12 @@ var ShoutBox = {
 		return ShoutBox.Templates['mysb_shout_message_image']
 						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
 						.replace(new RegExp("{{image_src}}", 'g'), message.content);
+	},
+	
+	renderVideoMessage: function(message){
+		return ShoutBox.Templates['mysb_shout_message_video']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{videoUrl}}", 'g'), message.content);
 	},
 
 	renderPmButton: function(userId) {
