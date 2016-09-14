@@ -52,8 +52,8 @@ function myshoutbox_add_image_shout($url)
 	{
 		BadRequestResponse(AddImageShoutError::FloodProtection);
 	}
-	
-	if($url == null || empty(trim($url)))
+	// TODO: refactor
+	if(empty(trim($url)))
 	{
 		BadRequestResponse(AddImageShoutError::InvalidImageUrl);
 	}
@@ -78,9 +78,18 @@ function myshoutbox_add_image_shout($url)
 		BadRequestResponse(AddImageShoutError::ImageFileSizeTooBig);
 	}
 	
+	$imageInfo = getimagesize($url);
+	$width = $imageInfo[0];
+	$height = $imageInfo[1];
+	
+	$shoutContent = new StdClass();
+	$shoutContent->url = $url;
+	$shoutContent->width = $width;
+	$shoutContent->height = $height;
+	
 	$shout_data = array(
 		'uid' => intval($mybb->user['uid']),
-		'shout_msg' => $url,
+		'shout_msg' => json_encode($shoutContent),
 		'shout_date' => time(),
 		'shout_ip' => get_ip(),
 		'hidden' => "no",
