@@ -30,7 +30,6 @@ ALTER TABLE mybb_mysb_shouts CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general
 ALTER TABLE mybb_mysb_shouts CHANGE COLUMN shout_msg shout_msg TEXT CHARACTER SET 'utf8mb4' NOT NULL;
 
 INSERT INTO `{MYBB_TABLE_PREFIX}mysb_shouts` VALUES (NULL, 1, 'Test Shout! Without any shout, shoutbox will display Loading... forever.. you need at least one shout, so here it is.', UTC_TIMESTAMP(), '127.0.0.1', 'no');
-INSERT INTO `{MYBB_TABLE_PREFIX}mysb_version` VALUES (1, UTC_TIMESTAMP());
 
 ALTER TABLE `{MYBB_TABLE_PREFIX}users` ADD `mysb_banned` smallint(1) NOT NULL DEFAULT 0;
 ALTER TABLE `{MYBB_TABLE_PREFIX}users` ADD `mysb_banned_reason` varchar(255) NOT NULL DEFAULT '';

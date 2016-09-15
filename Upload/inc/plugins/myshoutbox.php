@@ -25,7 +25,7 @@ if(!defined('IN_MYBB')) { BadRequestResponse("Not in MyBB"); }
 
 abstract class MyShoutboxConfiguration {
     const InstallDirectory = MYBB_ROOT . "inc/plugins/MyShoutbox/";
-    const DatabaseVersion = 2;
+    const DatabaseVersion = 3;
 }
 
 require_once MyShoutboxConfiguration::InstallDirectory . "core.php";
@@ -271,6 +271,7 @@ function myshoutbox_install()
 		"gid"			=>	intval($gid),
 	);
     
+	// Don't forget to delete
 	$db->insert_query("settings", $shoutbox_setting_1);
 	$db->insert_query("settings", $shoutbox_setting_2);
 	$db->insert_query("settings", $shoutbox_setting_3);
@@ -315,6 +316,7 @@ function myshoutbox_activate()
 	$mysb_shout_message_video = file_get_contents(MYBB_ROOT . "inc/plugins/MyShoutbox/templates/mysb_shout_message_video.html");
 	
 	// insert templates
+	// Don't forget to delete
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox', 'sid' => '-1', 'template' => $db->escape_string($mysb_shoutbox_tpl), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox_full', 'sid' => '-1', 'template' => $db->escape_string($mysb_boxfull_tpl), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shoutbox_popup', 'sid' => '-1', 'template' => $db->escape_string($mysb_popup_shoutbox_tpl), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
@@ -324,7 +326,6 @@ function myshoutbox_activate()
 	$db->insert_query('templates', array('title' => 'mysb_shout_button_pm', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_button_pm), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shout_message_image', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_image), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
 	$db->insert_query('templates', array('title' => 'mysb_shout_message_video', 'sid' => '-1', 'template' => $db->escape_string($mysb_shout_message_video), 'version' => '1801', 'status' => '', 'dateline' => TIME_NOW));
-	// Don't forget to delete
 	
 	require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
 	
@@ -349,7 +350,7 @@ function myshoutbox_uninstall()
 	$db->write_query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name = 'mysb_shoutbox'");
 	$db->write_query("DELETE FROM ".TABLE_PREFIX."settings WHERE name IN('mysb_shouts_main','mysb_refresh_interval','mysb_allow_mycode',
 							'mysb_allow_smilies','mysb_allow_imgcode','mysb_height','mysb_datetime','mysb_full_ppage','mysb_allow_smods',
-							'mysb_allow_html','mysb_flood_time','mysb_usergroups','mysb_additional_groups','mysb_allow_mods','mysb_display_message','mysb_allow_video','mysb_banned_mycode','mysb_cooldown_groups', 'mysb_key', 'mysb_text_size')");
+							'mysb_allow_html','mysb_flood_time','mysb_usergroups','mysb_additional_groups','mysb_allow_mods','mysb_display_message','mysb_allow_video','mysb_banned_mycode','mysb_cooldown_groups', 'mysb_key', 'mysb_text_size', 'mysb_image_max_width', 'mysb_image_max_height')");
 	
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_banned`;");
 	$db->write_query("ALTER TABLE `".TABLE_PREFIX."users` DROP `mysb_banned_reason`;");

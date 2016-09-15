@@ -57,6 +57,8 @@ var ShoutBox = {
 	Templates: {},
 	ActiveUserId: 0,
 	SelectedMessageType: ShoutboxMessageTypes.Text,
+	maxImageWidth: 500,
+	maxImageHeight: 100,
 	
 	getLanguageValue: function(key){
 		var languageValue = ShoutBox.newLang[key];

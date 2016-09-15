@@ -29,7 +29,14 @@ class DatabaseMigrator {
 				
 				$expandedQuery = str_replace("{MYBB_TABLE_PREFIX}", TABLE_PREFIX, $trimmedQuery);
 				$db->write_query($expandedQuery);
+
+				if(!empty($db->error)){
+					error_log("Error running database migration $version for MyShoutbox. Stopping\nQuery: $expandedQuery\nError: " . $db->error);
+					InternalServerErrorResponse();
+				}
 			}
+
+			$db->write_query("INSERT INTO " . TABLE_PREFIX . "mysb_version(`Version`, `DateTime`) VALUES ($version, UTC_TIMESTAMP())");
 		}
 	}
 	
