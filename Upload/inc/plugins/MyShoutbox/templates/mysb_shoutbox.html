@@ -210,8 +210,8 @@ li.shoutbox_color {
 
 .shout .shout-body-image img {
 	border-radius: 3px;
-	max-height: 100px;
-	max-width: 500px;
+	max-width: {$mybb->settings['mysb_image_max_width']}px;
+	max-height: {$mybb->settings['mysb_image_max_height']}px;
 }
 
 .shout .shout-body-video {
@@ -267,6 +267,8 @@ ShoutBox.MaxEntries = {$mybb->settings['mysb_shouts_main']};
 ShoutBox.lang = ['{$lang->mysb_posting}', '{$lang->mysb_shoutnow}', '{$lang->mysb_loading}', '{$lang->mysb_flood_check}', '{$lang->mysb_no_perform}', '{$lang->mysb_already_sent}', '{$lang->mysb_deleted}', '{$lang->mysb_invalid}', '{$lang->mysb_self}', '{$lang->mysb_report_invalid_sid}', '{$lang->mysb_shout_reported}', '{$lang->mysb_shout_already_reported}'];
 ShoutBox.newLang = { "mysb_reverse_shout_order_to_asc":  "{$lang->mysb_reverse_shout_order_to_asc}", "mysb_reverse_shout_order_to_desc":  "{$lang->mysb_reverse_shout_order_to_desc}" };
 ShoutBox.orderShoutboxDesc = {$mybb->user['mysb_order_desc']} === 1;
+ShoutBox.maxImageWidth = {$mybb->settings['mysb_image_max_width']};
+ShoutBox.maxImageHeight = {$mybb->settings['mysb_image_max_height']};
 {$extra_js}
 $(document).ready(function(){
 	

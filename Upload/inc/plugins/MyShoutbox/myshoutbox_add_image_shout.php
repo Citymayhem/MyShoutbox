@@ -47,40 +47,30 @@ function myshoutbox_add_image_shout($url)
 	{
 		UnauthorisedResponse();
 	}
-	
+
 	if(MyShoutboxFloodProtection::IsUserAllowedToPost($mybb->user) === false)
 	{
 		BadRequestResponse(AddImageShoutError::FloodProtection);
 	}
-	
-	if($url == null || empty(trim($url)))
-	{
-		BadRequestResponse(AddImageShoutError::InvalidImageUrl);
-	}
-	
+
 	$url = trim($url);
-	
-	$headResponse = PerformHeadRequest($url);
-	
-	if($headResponse->StatusCode != 200)
-	{
-		BadRequestResponse(AddImageShoutError::CouldNotRetrieveImage);
+	$urlValidationResult = myshoutbox_validate_image_url($url);
+	if($urlValidationResult !== true){
+		BadRequestResponse($urlValidationResult);
 	}
 	
-	$contentType = $headResponse->ContentType;
-	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png")
-	{
-		BadRequestResponse(AddImageShoutError::InvalidFileType);
-	}
+	$imageInfo = getimagesize($url);
+	$width = $imageInfo[0];
+	$height = $imageInfo[1];
 	
-	if($headResponse->ContentLength > 10485760)
-	{
-		BadRequestResponse(AddImageShoutError::ImageFileSizeTooBig);
-	}
+	$shoutContent = new StdClass();
+	$shoutContent->url = $url;
+	$shoutContent->width = $width;
+	$shoutContent->height = $height;
 	
 	$shout_data = array(
 		'uid' => intval($mybb->user['uid']),
-		'shout_msg' => $url,
+		'shout_msg' => json_encode($shoutContent),
 		'shout_date' => time(),
 		'shout_ip' => get_ip(),
 		'hidden' => "no",
@@ -93,4 +83,32 @@ function myshoutbox_add_image_shout($url)
 	}
 	
 	OkResponse();
+}
+
+function myshoutbox_validate_image_url($url)
+{
+	if(empty($url))
+	{
+		return AddImageShoutError::InvalidImageUrl;
+	}
+
+	$headResponse = PerformHeadRequest($url);
+
+	if($headResponse->StatusCode != 200)
+	{
+		return AddImageShoutError::CouldNotRetrieveImage;
+	}
+
+	$contentType = $headResponse->ContentType;
+	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png")
+	{
+		return AddImageShoutError::InvalidFileType;
+	}
+
+	if($headResponse->ContentLength > 10485760)
+	{
+		return AddImageShoutError::ImageFileSizeTooBig;
+	}
+
+	return true;
 }
