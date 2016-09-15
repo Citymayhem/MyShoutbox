@@ -47,35 +47,16 @@ function myshoutbox_add_image_shout($url)
 	{
 		UnauthorisedResponse();
 	}
-	
+
 	if(MyShoutboxFloodProtection::IsUserAllowedToPost($mybb->user) === false)
 	{
 		BadRequestResponse(AddImageShoutError::FloodProtection);
 	}
-	// TODO: refactor
-	if(empty(trim($url)))
-	{
-		BadRequestResponse(AddImageShoutError::InvalidImageUrl);
-	}
-	
+
 	$url = trim($url);
-	
-	$headResponse = PerformHeadRequest($url);
-	
-	if($headResponse->StatusCode != 200)
-	{
-		BadRequestResponse(AddImageShoutError::CouldNotRetrieveImage);
-	}
-	
-	$contentType = $headResponse->ContentType;
-	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png")
-	{
-		BadRequestResponse(AddImageShoutError::InvalidFileType);
-	}
-	
-	if($headResponse->ContentLength > 10485760)
-	{
-		BadRequestResponse(AddImageShoutError::ImageFileSizeTooBig);
+	$urlValidationResult = myshoutbox_validate_image_url($url);
+	if($urlValidationResult !== true){
+		BadRequestResponse($urlValidationResult);
 	}
 	
 	$imageInfo = getimagesize($url);
@@ -102,4 +83,32 @@ function myshoutbox_add_image_shout($url)
 	}
 	
 	OkResponse();
+}
+
+function myshoutbox_validate_image_url($url)
+{
+	if(empty($url))
+	{
+		return AddImageShoutError::InvalidImageUrl;
+	}
+
+	$headResponse = PerformHeadRequest($url);
+
+	if($headResponse->StatusCode != 200)
+	{
+		return AddImageShoutError::CouldNotRetrieveImage;
+	}
+
+	$contentType = $headResponse->ContentType;
+	if($contentType != "image/jpeg" && $contentType != "image/gif" && $contentType != "image/png")
+	{
+		return AddImageShoutError::InvalidFileType;
+	}
+
+	if($headResponse->ContentLength > 10485760)
+	{
+		return AddImageShoutError::ImageFileSizeTooBig;
+	}
+
+	return true;
 }
