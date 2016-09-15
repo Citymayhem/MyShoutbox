@@ -596,24 +596,14 @@ var ShoutBox = {
 	},
 
 	renderImageMessage: function(message){
-		try {
-			var imageInfo = JSON.parse(message.content);
-			var imageSize = ShoutBox.getImageScaledSize(imageInfo.width, imageInfo.height);
+		var imageInfo = JSON.parse(message.content);
+		var imageSize = ShoutBox.getImageScaledSize(imageInfo.width, imageInfo.height);
 
-			return ShoutBox.Templates['mysb_shout_message_image']
-							.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
-							.replace(new RegExp("{{width}}", 'g'),  imageSize.width + 'px')
-							.replace(new RegExp("{{height}}", 'g'), imageSize.height + 'px')
-							.replace(new RegExp("{{image_src}}", 'g'), imageInfo.url);
-		}
-		catch(e)
-		{
-			return ShoutBox.Templates['mysb_shout_message_image']
-							.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
-							.replace(new RegExp("{{width}}", 'g'), '500px')
-							.replace(new RegExp("{{height}}", 'g'), '100px')
-							.replace(new RegExp("{{image_src}}", 'g'), message.content);
-		}
+		return ShoutBox.Templates['mysb_shout_message_image']
+						.replace(new RegExp("{{dateTime}}", 'g'), message.dateTime.format("dddd, MMMM Do YYYY, h:mm:ss a"))
+						.replace(new RegExp("{{width}}", 'g'),  imageSize.width + 'px')
+						.replace(new RegExp("{{height}}", 'g'), imageSize.height + 'px')
+						.replace(new RegExp("{{image_src}}", 'g'), imageInfo.url);
 	},
 	
 	getImageScaledSize: function(width, height)
