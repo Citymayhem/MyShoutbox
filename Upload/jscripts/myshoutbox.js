@@ -107,12 +107,10 @@ var ShoutBox = {
 		});
 	},
 	
-	getShouts: function(finishedCallback=null) {
-		/*
-		if (typeof Ajax == 'object') {
-			new Ajax.Request('xmlhttp.php?action=show_shouts&last_id='+ShoutBox.lastID, {method: 'get', onComplete: function(request) { ShoutBox.shoutsLoaded(request); } });
-		}
-		*/		
+	getShouts: function(finishedCallback) {
+		// PRE-ES6 optional parameters
+		finishedCallback = typeof finishedCallback !== 'undefined' ? finishedCallback : null;
+
 		$.get("xmlhttp.php?action=get_shouts&last_id="+ShoutBox.lastID, function(data){
 			ShoutBox.shoutsRetrieved(data);
 		}).always(function(){
