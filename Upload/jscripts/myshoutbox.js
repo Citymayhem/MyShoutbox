@@ -603,31 +603,20 @@ var ShoutBox = {
 						.replace(new RegExp("{{height}}", 'g'), imageSize.height + 'px')
 						.replace(new RegExp("{{image_src}}", 'g'), imageInfo.url);
 	},
-	
+
 	getImageScaledSize: function(width, height)
 	{
-		var scaledWidth = width;
-		var scaledHeight = height;
-
 		if(width <= ShoutBox.maxImageWidth && height <= ShoutBox.maxImageHeight){
 			return {
 				width: width,
 				height: height
 			};
 		}
-
-		var widthDiff = width - ShoutBox.maxImageWidth;
-		var heightDiff = height - ShoutBox.maxImageHeight;
-		var scaleAmount = 1;
-
-		if(widthDiff > heightDiff)
-		{
-			scaleAmount = ShoutBox.maxImageWidth / width;
-		}
-		else
-		{
-			scaleAmount = ShoutBox.maxImageHeight / height;
-		}
+		
+		var widthPercentage = ShoutBox.maxImageWidth / width;
+		var heightPercentage = ShoutBox.maxImageHeight / height;
+		
+		var scaleAmount = Math.min(widthPercentage, heightPercentage);
 
 		return {
 			width: width * scaleAmount,
