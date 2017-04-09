@@ -59,9 +59,9 @@ function myshoutbox_add_image_shout($url)
 		BadRequestResponse($urlValidationResult);
 	}
 	
-	$imageInfo = getimagesize($url);
-	$width = $imageInfo[0];
-	$height = $imageInfo[1];
+	$imageSize = myshoutbox_get_remote_image_size($url);
+	$width = $imageSize[0];
+	$height = $imageSize[1];
 	
 	$shoutContent = new StdClass();
 	$shoutContent->url = $url;
@@ -83,6 +83,25 @@ function myshoutbox_add_image_shout($url)
 	}
 	
 	OkResponse();
+}
+
+function myshoutbox_get_remote_image_size($url){
+  $tempFileName = tempnam(sys_get_temp_dir(), "");
+
+  $ch = curl_init($url);
+  $fp = fopen($tempFileName, 'wb');
+  curl_setopt($ch, CURLOPT_FILE, $fp);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
+  curl_exec($ch);
+  curl_close($ch);
+  fclose($fp);
+
+  $imageSize = getimagesize($tempFileName);
+  $response = array($imageSize[0], $imageSize[1]);
+
+  unlink($tempFileName);
+
+  return $response;
 }
 
 function myshoutbox_validate_image_url($url)
